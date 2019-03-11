@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">EXTREMA</string>
+    <string name="title_activity_extrem">EXTREMA</string>
+    <string name="personal_details">Personal Details</string>
+    <string name="name">Name</string>
+    <string name="participant_id">ID</string>
+    <string name="save">Save</string>
+    <string name="email">your@email.com</string>
+    <string name="dateOfBirth">Date of Birth</string>
+</resources>
