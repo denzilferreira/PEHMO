@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ViewAccount">
+    tools:context=".Home">
 
     <TextView
         android:id="@+id/personal_details"
@@ -14,8 +14,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="214dp"
         android:text="@string/personal_details"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:textStyle="bold"
+        android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -104,7 +103,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:text="@string/dateOfBirth"
-        android:textStyle="bold"
+        android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"

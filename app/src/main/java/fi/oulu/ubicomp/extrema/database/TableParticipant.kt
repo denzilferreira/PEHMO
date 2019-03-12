@@ -2,7 +2,7 @@ package fi.oulu.ubicomp.extrema.database
 
 import androidx.room.*
 
-@Entity(tableName = "participants")
+@Entity(tableName = "participant")
 data class Participant(
         @PrimaryKey(autoGenerate = true) var uid: Int?,
         @ColumnInfo(name = "participantId") var participantId: String,
@@ -14,9 +14,9 @@ data class Participant(
 
 @Dao
 interface ParticipantDao {
-    @Query("SELECT * FROM participants LIMIT 1")
+    @Query("SELECT * FROM participant LIMIT 1")
     fun getParticipant(): Participant
 
     @Insert
-    fun insertAll(vararg participants: Participant)
+    fun insert(participant: Participant)
 }

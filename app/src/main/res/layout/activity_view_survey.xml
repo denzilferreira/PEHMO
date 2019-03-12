@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ViewSurvey">
+
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/welcomeHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:text="@string/welcome"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/q1"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/today_rescue_count"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="@string/today_rescue_count" />
+
+            <EditText
+                android:id="@+id/timesRescue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="number" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/today_regulates"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="@string/today_regulates" />
+
+            <ToggleButton
+                android:id="@+id/regulatesToday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textOff="@string/no"
+                android:textOn="@string/yes" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/other_asthma_meds"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:layout_editor_absoluteX="25dp"
+                tools:layout_editor_absoluteY="293dp"
+                tools:text="@string/other_asthma_meds" />
+
+            <EditText
+                android:id="@+id/otherAsthmaMeds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/hint_meds_name"
+                android:inputType="textMultiLine"
+                android:minLines="3" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/symptoms"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="355dp" />
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/reflect_severity_symptoms"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textStyle="bold"
+                tools:layout_editor_absoluteX="16dp"
+                tools:layout_editor_absoluteY="402dp" />
+
+            <TextView
+                android:id="@+id/textView5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/symptom_shortness_breath"
+                android:textAlignment="viewStart"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="435dp"
+                tools:text="@string/symptom_shortness_breath" />
+
+            <RadioGroup
+                android:id="@+id/shortnessBreath"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/short_not_at_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_not_at_all" />
+
+                <RadioButton
+                    android:id="@+id/short_mild"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_mild" />
+
+                <RadioButton
+                    android:id="@+id/short_moderate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_moderate" />
+
+                <RadioButton
+                    android:id="@+id/short_strong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_strong" />
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/textView7"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/symptom_cough"
+                android:textAlignment="viewStart"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="435dp"
+                tools:text="@string/symptom_cough" />
+
+            <RadioGroup
+                android:id="@+id/cough"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/cough_not_at_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_not_at_all" />
+
+                <RadioButton
+                    android:id="@+id/cough_mild"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_mild" />
+
+                <RadioButton
+                    android:id="@+id/cough_moderate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_moderate" />
+
+                <RadioButton
+                    android:id="@+id/cough_strong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_strong" />
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/textView8"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/symptom_phlegm"
+                android:textAlignment="viewStart"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="435dp"
+                tools:text="@string/symptom_phlegm" />
+
+            <RadioGroup
+                android:id="@+id/phlegm"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/phlegm_not_at_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_not_at_all" />
+
+                <RadioButton
+                    android:id="@+id/phlegm_mild"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_mild" />
+
+                <RadioButton
+                    android:id="@+id/phlegm_moderate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_moderate" />
+
+                <RadioButton
+                    android:id="@+id/phlegm_strong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_strong" />
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/symptom_wheezing"
+                android:textAlignment="viewStart"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="435dp"
+                tools:text="@string/symptom_wheezing" />
+
+            <RadioGroup
+                android:id="@+id/wheezing"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/wheezing_not_at_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_not_at_all" />
+
+                <RadioButton
+                    android:id="@+id/wheezing_mild"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_mild" />
+
+                <RadioButton
+                    android:id="@+id/wheezing_moderate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_moderate" />
+
+                <RadioButton
+                    android:id="@+id/wheezing_strong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_strong" />
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/textView11"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/reflect_frequency_symptoms_medication"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textView12"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/frequency_nocturnal"
+                android:textAlignment="viewStart"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="435dp"
+                tools:text="@string/frequency_nocturnal" />
+
+            <RadioGroup
+                android:id="@+id/nocturnal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/nocturnal_not_at_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_not_at_all" />
+
+                <RadioButton
+                    android:id="@+id/nocturnal_once"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_once"
+                    tools:text="@string/rate_once" />
+
+                <RadioButton
+                    android:id="@+id/nocturnal_coupletrio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_twothree"
+                    tools:text="@string/rate_twothree" />
+
+                <RadioButton
+                    android:id="@+id/nocturnal_fourplus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_fourplus"
+                    tools:text="@string/rate_fourplus" />
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/textView13"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/frequency_opening_meds"
+                android:textAlignment="viewStart"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="435dp"
+                tools:text="@string/frequency_opening_meds" />
+
+            <RadioGroup
+                android:id="@+id/opening_meds"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/meds_not_at_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_not_at_all" />
+
+                <RadioButton
+                    android:id="@+id/meds_once"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_once"
+                    tools:text="@string/rate_once" />
+
+                <RadioButton
+                    android:id="@+id/meds_coupletrio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_twothree"
+                    tools:text="@string/rate_twothree" />
+
+                <RadioButton
+                    android:id="@+id/meds_fourplus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_fourplus"
+                    tools:text="@string/rate_fourplus" />
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/textView14"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/estimate_asthma_balance"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6"
+                tools:text="@string/estimate_asthma_balance" />
+
+            <RadioGroup
+                android:id="@+id/estimation_asthma"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:id="@+id/estimate_good"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/estimate_good" />
+
+                <RadioButton
+                    android:id="@+id/estimate_more_less_control"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/estimate_more_less_controlled" />
+
+                <RadioButton
+                    android:id="@+id/estimate_poorly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/estimate_poorly" />
+
+                <RadioButton
+                    android:id="@+id/estimate_not_controlled"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/estimate_not_at_all_control" />
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/textView15"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/day_act_normal"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6" />
+
+            <ToggleButton
+                android:id="@+id/actNormally"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textOff="@string/no"
+                android:textOn="@string/yes" />
+
+            <EditText
+                android:id="@+id/changesMedicationDose"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/changes_medication_dose"
+                android:inputType="textMultiLine"
+                android:minLines="3" />
+
+            <TextView
+                android:id="@+id/textView16"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cold_today"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6" />
+
+            <ToggleButton
+                android:id="@+id/coldToday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ToggleButton"
+                android:textOff="@string/no"
+                android:textOn="@string/yes" />
+
+            <TextView
+                android:id="@+id/textView17"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/doctorVisit"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6" />
+
+            <ToggleButton
+                android:id="@+id/visitDoctor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ToggleButton"
+                android:textOff="@string/no"
+                android:textOn="@string/yes" />
+
+            <EditText
+                android:id="@+id/otherConsiderations"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/otherConsiderations"
+                android:inputType="textMultiLine"
+                android:minLines="3" />
+
+            <Button
+                android:id="@+id/saveDiary"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="16dp"
+                android:background="@color/colorPrimary"
+                android:backgroundTint="@color/colorAccent"
+                android:text="@string/save"
+                tools:text="@string/save" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

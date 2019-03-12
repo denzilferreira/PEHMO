@@ -2,10 +2,10 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "e3a9ac12fce86883ef24ba06c381bcc0",
+    "identityHash": "80e7d8e1b85f630d6d29d8fa1dab7f83",
     "entities": [
       {
-        "tableName": "participants",
+        "tableName": "participant",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT, `participantId` TEXT NOT NULL, `participantName` TEXT NOT NULL, `participantEmail` TEXT NOT NULL, `participantBirth` TEXT NOT NULL, `onboardDate` INTEGER NOT NULL)",
         "fields": [
           {
@@ -53,12 +53,50 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "diary",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT, `participantId` TEXT NOT NULL, `entryDate` INTEGER NOT NULL, `surveyData` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "uid",
+            "columnName": "uid",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "participantId",
+            "columnName": "participantId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entryDate",
+            "columnName": "entryDate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "surveyData",
+            "columnName": "surveyData",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "uid"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"e3a9ac12fce86883ef24ba06c381bcc0\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"80e7d8e1b85f630d6d29d8fa1dab7f83\")"
     ]
   }
 }

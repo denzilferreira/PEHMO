@@ -1,6 +1,7 @@
 package fi.oulu.ubicomp.extrema.database
 
 import androidx.room.*
+import java.util.*
 
 @Entity(tableName = "diary")
 data class Survey(
@@ -14,4 +15,10 @@ data class Survey(
 interface SurveyDao {
     @Insert
     fun insert(survey: Survey)
+
+    @Query("SELECT * FROM diary WHERE entryDate BETWEEN :dateStart AND :dateEnd")
+    fun getSurveys(dateStart : Long, dateEnd : Long): Array<Survey>
+
+    @Query("SELECT * FROM diary WHERE entryDate > :lastSync")
+    fun getPendingSync(lastSync : Long) : Array<Survey>
 }
