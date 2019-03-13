@@ -18,6 +18,7 @@ import fi.oulu.ubicomp.extrema.database.Participant
 import org.jetbrains.anko.doAsync
 
 class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams), LocationListener {
+
     override fun onLocationChanged(location: Location?) {
         latestLocation = location
         if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PermissionChecker.PERMISSION_GRANTED) {
@@ -37,7 +38,7 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
 
             doAsync {
                 db?.locationDao()?.insert(locationData)
-                Log.d(Home.TAG, location.toString())
+                Log.d(Home.TAG, locationData.toString())
             }
         }
     }

@@ -89,7 +89,7 @@
         android:id="@+id/participantDoB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:calendarViewShown="false"
         android:datePickerMode="spinner"
         app:layout_constraintEnd_toEndOf="parent"
@@ -101,11 +101,22 @@
         android:id="@+id/dateOfBirthHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="27dp"
         android:text="@string/dateOfBirth"
         android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ruuviTag" />
+
+    <EditText
+        android:id="@+id/ruuviTag"
+        android:layout_width="332dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="00:00:00:00:00 (RuuviTag)"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/participantEmail" />
 

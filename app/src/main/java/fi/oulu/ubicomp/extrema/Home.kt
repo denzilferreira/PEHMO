@@ -15,6 +15,7 @@ import androidx.work.WorkManager
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.database.Participant
 import fi.oulu.ubicomp.extrema.views.ViewSurvey
+import fi.oulu.ubicomp.extrema.workers.BluetoothWorker
 import fi.oulu.ubicomp.extrema.workers.LocationWorker
 import kotlinx.android.synthetic.main.activity_account.*
 import org.jetbrains.anko.doAsync
@@ -43,6 +44,7 @@ class Home : AppCompatActivity() {
                     participantEmail = participantEmail.text.toString(),
                     participantName = participantName.text.toString(),
                     participantId = participantId.text.toString(),
+                    ruuviTag = ruuviTag.text.toString(),
                     onboardDate = System.currentTimeMillis()
             )
 
@@ -51,6 +53,7 @@ class Home : AppCompatActivity() {
                 participantData = db?.participantDao()?.getParticipant()
                 finish()
                 startActivity(Intent(applicationContext, ViewSurvey::class.java))
+                startSensing()
             }
         }
     }
@@ -69,17 +72,25 @@ class Home : AppCompatActivity() {
         } else {
             doAsync {
                 participantData = db?.participantDao()?.getParticipant()
-
                 if (participantData != null) {
-
-                    startActivity(Intent(applicationContext, ViewSurvey::class.java))
-
-                    val constraints = Constraints.Builder().setRequiresBatteryNotLow(true).build()
-                    val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).setConstraints(constraints).build()
-                    WorkManager.getInstance().enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, locationTracking)
-
                     finish()
+                    startActivity(Intent(applicationContext, ViewSurvey::class.java))
+                    startSensing()
                 }
+            }
+        }
+    }
+
+    fun startSensing() {
+        val constraints = Constraints.Builder().setRequiresBatteryNotLow(true).build()
+
+        val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).setConstraints(constraints).build()
+        WorkManager.getInstance().enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, locationTracking)
+
+        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            if (!participantData?.ruuviTag.isNullOrBlank()) {
+                val bluetoothTracking = PeriodicWorkRequestBuilder<BluetoothWorker>(15, TimeUnit.MINUTES).setConstraints(constraints).build()
+                WorkManager.getInstance().enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, bluetoothTracking)
             }
         }
     }

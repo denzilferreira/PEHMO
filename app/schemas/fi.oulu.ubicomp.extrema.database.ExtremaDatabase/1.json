@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "00511ebbd363dcf9cc7e7ddcc4168530",
+    "identityHash": "54fc585926355e1db81e24c95525440d",
     "entities": [
       {
         "tableName": "participant",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT, `participantId` TEXT NOT NULL, `participantName` TEXT NOT NULL, `participantEmail` TEXT NOT NULL, `participantBirth` TEXT NOT NULL, `onboardDate` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT, `participantId` TEXT NOT NULL, `participantName` TEXT NOT NULL, `participantEmail` TEXT NOT NULL, `participantBirth` TEXT NOT NULL, `ruuviTag` TEXT, `onboardDate` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "uid",
@@ -37,6 +37,12 @@
             "columnName": "participantBirth",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "ruuviTag",
+            "columnName": "ruuviTag",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "onboardDate",
@@ -168,7 +174,7 @@
       },
       {
         "tableName": "bluetooth",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT, `participantId` TEXT NOT NULL, `entryDate` INTEGER NOT NULL, `macAddress` TEXT NOT NULL, `btName` TEXT NOT NULL, `btRSSI` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT, `participantId` TEXT, `entryDate` INTEGER NOT NULL, `macAddress` TEXT, `btName` TEXT, `btRSSI` INTEGER)",
         "fields": [
           {
             "fieldPath": "uid",
@@ -180,7 +186,7 @@
             "fieldPath": "participantId",
             "columnName": "participantId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "entryDate",
@@ -192,19 +198,19 @@
             "fieldPath": "macAddress",
             "columnName": "macAddress",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "btName",
             "columnName": "btName",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "btRSSI",
             "columnName": "btRSSI",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -220,7 +226,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"00511ebbd363dcf9cc7e7ddcc4168530\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"54fc585926355e1db81e24c95525440d\")"
     ]
   }
 }
