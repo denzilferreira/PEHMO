@@ -41,4 +41,6 @@
     <string name="doctorVisit">DId you visit a doctor today because of asthma or allergy?</string>
     <string name="otherConsiderations">Other considerations?</string>
     <string name="thanks">Thanks!</string>
+    <string name="survey_notification_title">EXTREMA survey</string>
+    <string name="survey_notification_text">Press here to answer your daily symptoms!</string>
 </resources>

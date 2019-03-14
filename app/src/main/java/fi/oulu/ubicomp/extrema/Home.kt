@@ -8,17 +8,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.work.*
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.database.Participant
 import fi.oulu.ubicomp.extrema.views.ViewSurvey
 import fi.oulu.ubicomp.extrema.workers.BluetoothWorker
 import fi.oulu.ubicomp.extrema.workers.LocationWorker
+import fi.oulu.ubicomp.extrema.workers.SurveyWorker
 import kotlinx.android.synthetic.main.activity_account.*
 import org.jetbrains.anko.doAsync
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class Home : AppCompatActivity() {
@@ -93,6 +92,12 @@ class Home : AppCompatActivity() {
                 WorkManager.getInstance().enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, bluetoothTracking)
             }
         }
+
+        val hourOfDay = 19 //7pm
+        val repeatInterval = 1L //once a day
+        val flexTime = calculateFlex(hourOfDay, repeatInterval)
+        val surveyReminder = PeriodicWorkRequest.Builder(SurveyWorker::class.java, repeatInterval, TimeUnit.DAYS, flexTime, TimeUnit.MILLISECONDS).build()
+        WorkManager.getInstance().enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, surveyReminder)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -101,5 +106,20 @@ class Home : AppCompatActivity() {
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN),
                     EXTREMA_PERMISSIONS)
         }
+    }
+
+    fun calculateFlex(hour: Int, repeat: Long) : Long {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, hour)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+
+        val calendarNow = Calendar.getInstance()
+        if (calendarNow.timeInMillis < calendar.timeInMillis) {
+            calendarNow.timeInMillis = calendarNow.timeInMillis + TimeUnit.DAYS.toMillis(repeat)
+        }
+
+        val delta = calendarNow.timeInMillis - calendar.timeInMillis
+        return if (delta > PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS) delta else PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS
     }
 }
