@@ -33,6 +33,7 @@ dependencies {
     def room_version = "2.1.0-alpha04"
     def anko_version = "0.10.8"
     def work_version = "2.0.0-rc01"
+    def mysql_version = "8.0.15"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -46,9 +47,9 @@ dependencies {
 
     implementation "androidx.room:room-common:$room_version"
     implementation "androidx.room:room-runtime:$room_version"
-
     kapt "androidx.room:room-compiler:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
     implementation "androidx.work:work-runtime-ktx:$work_version"
+    implementation "mysql:mysql-connector-java:$mysql_version"
 }

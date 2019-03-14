@@ -63,12 +63,26 @@
                 android:textStyle="bold"
                 tools:text="@string/today_regulates" />
 
-            <ToggleButton
+            <RadioGroup
                 android:id="@+id/regulatesToday"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textOff="@string/no"
-                android:textOn="@string/yes" />
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/regulatesNo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/no" />
+
+                <RadioButton
+                    android:id="@+id/regulatesYes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/yes" />
+            </RadioGroup>
 
             <TextView
                 android:id="@+id/textView2"
@@ -458,12 +472,26 @@
                 android:text="@string/day_act_normal"
                 android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6" />
 
-            <ToggleButton
-                android:id="@+id/actNormally"
+            <RadioGroup
+                android:id="@+id/preventNormal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textOff="@string/no"
-                android:textOn="@string/yes" />
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/preventNormalNo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/no" />
+
+                <RadioButton
+                    android:id="@+id/preventNormalYes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/yes" />
+            </RadioGroup>
 
             <EditText
                 android:id="@+id/changesMedicationDose"
@@ -481,13 +509,26 @@
                 android:text="@string/cold_today"
                 android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6" />
 
-            <ToggleButton
+            <RadioGroup
                 android:id="@+id/coldToday"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="ToggleButton"
-                android:textOff="@string/no"
-                android:textOn="@string/yes" />
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/coldTodayNo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/no" />
+
+                <RadioButton
+                    android:id="@+id/coldTodayYes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/yes" />
+            </RadioGroup>
 
             <TextView
                 android:id="@+id/textView17"
@@ -496,13 +537,26 @@
                 android:text="@string/doctorVisit"
                 android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6" />
 
-            <ToggleButton
+            <RadioGroup
                 android:id="@+id/visitDoctor"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="ToggleButton"
-                android:textOff="@string/no"
-                android:textOn="@string/yes" />
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/visitDoctorNo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/no" />
+
+                <RadioButton
+                    android:id="@+id/visitDoctorYes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/yes" />
+            </RadioGroup>
 
             <EditText
                 android:id="@+id/otherConsiderations"

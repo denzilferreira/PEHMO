@@ -7,8 +7,7 @@ data class Participant(
         @PrimaryKey(autoGenerate = true) var uid: Int?,
         @ColumnInfo(name = "participantId") var participantId: String,
         @ColumnInfo(name = "participantName") var participantName: String,
-        @ColumnInfo(name = "participantEmail") var participantEmail: String,
-        @ColumnInfo(name = "participantBirth") var participantBirth: String,
+        @ColumnInfo(name = "participantEmail") var participantEmail: String?,
         @ColumnInfo(name = "ruuviTag") var ruuviTag: String?,
         @ColumnInfo(name = "onboardDate") var onboardDate : Long
 )
