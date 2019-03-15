@@ -9,7 +9,6 @@ import androidx.room.RoomDatabase
     Location::class,
     Bluetooth::class]
 , version = 1)
-
 abstract class ExtremaDatabase : RoomDatabase() {
     abstract fun participantDao(): ParticipantDao
     abstract fun surveyDao(): SurveyDao

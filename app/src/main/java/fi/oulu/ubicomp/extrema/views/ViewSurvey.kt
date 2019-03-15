@@ -1,9 +1,17 @@
 package fi.oulu.ubicomp.extrema.views
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.room.Room
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import com.google.gson.GsonBuilder
 import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.R
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase

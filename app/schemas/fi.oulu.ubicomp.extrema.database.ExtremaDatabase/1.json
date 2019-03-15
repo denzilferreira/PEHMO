@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "54fc585926355e1db81e24c95525440d",
+    "identityHash": "7e30478e896bba164083c3da27a96baa",
     "entities": [
       {
         "tableName": "participant",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT, `participantId` TEXT NOT NULL, `participantName` TEXT NOT NULL, `participantEmail` TEXT NOT NULL, `participantBirth` TEXT NOT NULL, `ruuviTag` TEXT, `onboardDate` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT, `participantId` TEXT NOT NULL, `participantName` TEXT NOT NULL, `participantEmail` TEXT, `ruuviTag` TEXT, `onboardDate` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "uid",
@@ -30,13 +30,7 @@
             "fieldPath": "participantEmail",
             "columnName": "participantEmail",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "participantBirth",
-            "columnName": "participantBirth",
-            "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "ruuviTag",
@@ -226,7 +220,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"54fc585926355e1db81e24c95525440d\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"7e30478e896bba164083c3da27a96baa\")"
     ]
   }
 }

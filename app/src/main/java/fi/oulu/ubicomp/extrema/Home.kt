@@ -4,19 +4,28 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
 import androidx.work.*
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import com.google.gson.GsonBuilder
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.database.Participant
 import fi.oulu.ubicomp.extrema.views.ViewSurvey
 import fi.oulu.ubicomp.extrema.workers.BluetoothWorker
 import fi.oulu.ubicomp.extrema.workers.LocationWorker
 import fi.oulu.ubicomp.extrema.workers.SurveyWorker
+import fi.oulu.ubicomp.extrema.workers.SyncWorker
 import kotlinx.android.synthetic.main.activity_account.*
 import org.jetbrains.anko.doAsync
+import org.json.JSONObject
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -26,6 +35,9 @@ class Home : AppCompatActivity() {
         val TAG = "EXTREMA"
         val EXTREMA_PERMISSIONS = 12345
         var participantData: Participant? = null
+        const val EXTREMA_PREFS = "fi.oulu.ubicomp.extrema.prefs"
+        const val UUID = "deviceId"
+        const val STUDY_URL = "https://co2.awareframework.com:8443/insert"
     }
 
     var db: ExtremaDatabase? = null
@@ -33,13 +45,17 @@ class Home : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val prefs = getSharedPreferences(EXTREMA_PREFS, 0)
+        if (!prefs.contains(UUID)) {
+            prefs.edit().putString(UUID, java.util.UUID.randomUUID().toString()).apply()
+        }
+
         setContentView(R.layout.activity_account)
 
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
 
         btnSaveParticipant.setOnClickListener {
             val participant = Participant(null,
-                    participantBirth = "${participantDoB.year}/${participantDoB.month}/${participantDoB.dayOfMonth}",
                     participantEmail = participantEmail.text.toString(),
                     participantName = participantName.text.toString(),
                     participantId = participantId.text.toString(),
@@ -50,6 +66,26 @@ class Home : AppCompatActivity() {
             doAsync {
                 db?.participantDao()?.insert(participant)
                 participantData = db?.participantDao()?.getParticipant()
+
+                val jsonBuilder = GsonBuilder()
+                val jsonPost = jsonBuilder.create()
+
+                val requestQueue = Volley.newRequestQueue(applicationContext)
+
+                val data = JSONObject()
+                        .put("tableName", "participant")
+                        .put("deviceId", prefs.getString(UUID, ""))
+                        .put("data", jsonPost.toJson(participantData))
+                        .put("timestamp", System.currentTimeMillis())
+
+                val serverRequest = JsonObjectRequest(Request.Method.POST, STUDY_URL, data,
+                    Response.Listener {
+                        println(it.toString(5))
+                    },
+                    Response.ErrorListener {}
+                )
+                requestQueue.add(serverRequest)
+
                 finish()
                 startActivity(Intent(applicationContext, ViewSurvey::class.java))
                 startSensing()
@@ -83,9 +119,11 @@ class Home : AppCompatActivity() {
     fun startSensing() {
         val constraints = Constraints.Builder().setRequiresBatteryNotLow(true).build()
 
+        //Set location logging every 15 minutes
         val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).setConstraints(constraints).build()
         WorkManager.getInstance().enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, locationTracking)
 
+        //Set bluetooth scanning if available or makes sense
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             if (!participantData?.ruuviTag.isNullOrBlank()) {
                 val bluetoothTracking = PeriodicWorkRequestBuilder<BluetoothWorker>(15, TimeUnit.MINUTES).setConstraints(constraints).build()
@@ -93,11 +131,16 @@ class Home : AppCompatActivity() {
             }
         }
 
+        //Set daily survey reminder at 7pm
         val hourOfDay = 19 //7pm
         val repeatInterval = 1L //once a day
         val flexTime = calculateFlex(hourOfDay, repeatInterval)
         val surveyReminder = PeriodicWorkRequest.Builder(SurveyWorker::class.java, repeatInterval, TimeUnit.DAYS, flexTime, TimeUnit.MILLISECONDS).build()
         WorkManager.getInstance().enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, surveyReminder)
+
+        //Set data sync to server every 30 minutes
+        val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(30, TimeUnit.MINUTES).setConstraints(constraints).build()
+        WorkManager.getInstance().enqueueUniquePeriodicWork("SYNC_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, dataSync)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -108,7 +151,7 @@ class Home : AppCompatActivity() {
         }
     }
 
-    fun calculateFlex(hour: Int, repeat: Long) : Long {
+    fun calculateFlex(hour: Int, repeat: Long): Long {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.HOUR_OF_DAY, hour)
         calendar.set(Calendar.MINUTE, 0)
