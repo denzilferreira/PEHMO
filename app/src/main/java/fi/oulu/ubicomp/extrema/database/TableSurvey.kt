@@ -13,7 +13,7 @@ data class Survey(
 
 @Dao
 interface SurveyDao {
-    @Insert
+    @Transaction @Insert
     fun insert(survey: Survey)
 
     @Query("SELECT * FROM diary WHERE entryDate > :lastSync")

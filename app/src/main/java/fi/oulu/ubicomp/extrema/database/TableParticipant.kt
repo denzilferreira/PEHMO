@@ -17,6 +17,6 @@ interface ParticipantDao {
     @Query("SELECT * FROM participant LIMIT 1")
     fun getParticipant(): Participant
 
-    @Insert
+    @Transaction @Insert
     fun insert(participant: Participant)
 }

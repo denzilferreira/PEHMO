@@ -9,12 +9,11 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.R
 import fi.oulu.ubicomp.extrema.views.ViewSurvey
 
 class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
-
-    val EXTREMA_SURVEY = 123456
 
     override fun doWork(): Result {
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -34,7 +33,7 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
 
         val pendingSurvey = PendingIntent.getActivity(applicationContext, 0, surveyIntent, 0)
 
-        var builder = NotificationCompat.Builder(applicationContext, "EXTREMA")
+        val builder = NotificationCompat.Builder(applicationContext, "EXTREMA")
                 .setSmallIcon(R.drawable.ic_stat_extrema_survey)
                 .setContentTitle(applicationContext.getString(R.string.survey_notification_title))
                 .setContentText(applicationContext.getString(R.string.survey_notification_text))
@@ -43,7 +42,7 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
                 .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
 
-        notificationManager.notify(EXTREMA_SURVEY, builder.build())
+        notificationManager.notify(Home.EXTREMA_PERMISSIONS, builder.build())
 
         return Result.success()
     }

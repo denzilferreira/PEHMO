@@ -14,7 +14,7 @@ data class Bluetooth(
 
 @Dao
 interface BluetoothDao {
-    @Insert
+    @Transaction @Insert
     fun insert(bluetooth: Bluetooth)
 
     @Query("SELECT * FROM bluetooth WHERE entryDate > :lastSync")

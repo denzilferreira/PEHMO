@@ -33,7 +33,7 @@
     <string name="estimate_asthma_balance">Η δική σας εκτίμηση για την ισορροπία του άσθματος</string>
     <string name="estimate_good">Καλή</string>
     <string name="estimate_more_less_controlled">Σχεδόν υπό πλήρη έλεγχο </string>
-    <string name="estimate_poorly">Κάπως υπό 'Ελεγχο </string>
+    <string name="estimate_poorly">Κάπως υπό \'Ελεγχο </string>
     <string name="estimate_not_at_all_control">Εκτός Ελέγχου</string>
     <string name="day_act_normal">Σε εμπόδισε το άσθμα σήμερα να ανταποκριθείς στα καθήκοντά σου στη δουλειά, το σχολείο, τις σπουδές ή το σπίτι; </string>
     <string name="changes_medication_dose">Αλλαγές στο φάρμακο και νέα δόση; </string>

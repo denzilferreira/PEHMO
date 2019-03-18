@@ -44,7 +44,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             prefs.edit().putLong("bluetooth", pendingBluetooth.last().entryDate).apply()
         }
 
-        val pendingLocation = db.bluetoothDao().getPendingSync(prefs.getLong("location",0))
+        val pendingLocation = db.locationDao().getPendingSync(prefs.getLong("location",0))
         if (pendingLocation.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
             val jsonPost = jsonBuilder.create()
@@ -67,7 +67,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             prefs.edit().putLong("location", pendingLocation.last().entryDate).apply()
         }
 
-        val pendingSurvey = db.bluetoothDao().getPendingSync(prefs.getLong("survey",0))
+        val pendingSurvey = db.surveyDao().getPendingSync(prefs.getLong("survey",0))
         if (pendingSurvey.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
             val jsonPost = jsonBuilder.create()
@@ -89,6 +89,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             }
             prefs.edit().putLong("survey", pendingSurvey.last().entryDate).apply()
         }
+
+        db.close()
         return Result.success()
     }
 }

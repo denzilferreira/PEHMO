@@ -18,7 +18,7 @@ data class Location(
 
 @Dao
 interface LocationDao {
-    @Insert
+    @Transaction @Insert
     fun insert(location: Location)
 
     @Query("SELECT * FROM location WHERE entryDate > :lastSync")

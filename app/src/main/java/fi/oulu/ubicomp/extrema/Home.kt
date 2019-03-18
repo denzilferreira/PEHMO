@@ -32,12 +32,12 @@ import java.util.concurrent.TimeUnit
 class Home : AppCompatActivity() {
 
     companion object {
-        val TAG = "EXTREMA"
-        val EXTREMA_PERMISSIONS = 12345
-        var participantData: Participant? = null
+        const val TAG = "EXTREMA"
+        const val EXTREMA_PERMISSIONS = 12345
         const val EXTREMA_PREFS = "fi.oulu.ubicomp.extrema.prefs"
         const val UUID = "deviceId"
         const val STUDY_URL = "https://co2.awareframework.com:8443/insert"
+        var participantData: Participant? = null
     }
 
     var db: ExtremaDatabase? = null
@@ -116,18 +116,23 @@ class Home : AppCompatActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        db?.close()
+    }
+
     fun startSensing() {
         val constraints = Constraints.Builder().setRequiresBatteryNotLow(true).build()
 
         //Set location logging every 15 minutes
         val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).setConstraints(constraints).build()
-        WorkManager.getInstance().enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, locationTracking)
+        WorkManager.getInstance().enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, locationTracking)
 
         //Set bluetooth scanning if available or makes sense
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             if (!participantData?.ruuviTag.isNullOrBlank()) {
                 val bluetoothTracking = PeriodicWorkRequestBuilder<BluetoothWorker>(15, TimeUnit.MINUTES).setConstraints(constraints).build()
-                WorkManager.getInstance().enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, bluetoothTracking)
+                WorkManager.getInstance().enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, bluetoothTracking)
             }
         }
 
@@ -136,11 +141,12 @@ class Home : AppCompatActivity() {
         val repeatInterval = 1L //once a day
         val flexTime = calculateFlex(hourOfDay, repeatInterval)
         val surveyReminder = PeriodicWorkRequest.Builder(SurveyWorker::class.java, repeatInterval, TimeUnit.DAYS, flexTime, TimeUnit.MILLISECONDS).build()
-        WorkManager.getInstance().enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, surveyReminder)
+        WorkManager.getInstance().enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, surveyReminder)
 
         //Set data sync to server every 30 minutes
-        val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(30, TimeUnit.MINUTES).setConstraints(constraints).build()
-        WorkManager.getInstance().enqueueUniquePeriodicWork("SYNC_EXTREMA", ExistingPeriodicWorkPolicy.REPLACE, dataSync)
+        val constraintsSync = Constraints.Builder().setRequiredNetworkType(NetworkType.UNMETERED).build() //only sync when on WiFi
+        val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES).setConstraints(constraintsSync).build()
+        WorkManager.getInstance().enqueueUniquePeriodicWork("SYNC_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, dataSync)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

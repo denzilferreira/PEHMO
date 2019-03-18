@@ -68,4 +68,9 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
 
         return Result.success()
     }
+
+    override fun onStopped() {
+        super.onStopped()
+        db?.close()
+    }
 }

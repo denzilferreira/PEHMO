@@ -92,4 +92,9 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
             }
         }
     }
+
+    override fun onStopped() {
+        super.onStopped()
+        db?.close()
+    }
 }
