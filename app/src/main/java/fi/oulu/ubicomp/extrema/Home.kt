@@ -1,13 +1,19 @@
 package fi.oulu.ubicomp.extrema
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
 import androidx.work.*
@@ -136,11 +142,8 @@ class Home : AppCompatActivity() {
             }
         }
 
-        //Set daily survey reminder at 7pm
-        val hourOfDay = 19 //7pm
-        val repeatInterval = 1L //once a day
-        val flexTime = calculateFlex(hourOfDay, repeatInterval)
-        val surveyReminder = PeriodicWorkRequest.Builder(SurveyWorker::class.java, repeatInterval, TimeUnit.DAYS, flexTime, TimeUnit.MILLISECONDS).build()
+        //check every hour if it's a good time to show the survey
+        val surveyReminder = PeriodicWorkRequestBuilder<SurveyWorker>(1, TimeUnit.HOURS).build()
         WorkManager.getInstance().enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, surveyReminder)
 
         //Set data sync to server every 30 minutes
@@ -155,20 +158,5 @@ class Home : AppCompatActivity() {
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN),
                     EXTREMA_PERMISSIONS)
         }
-    }
-
-    fun calculateFlex(hour: Int, repeat: Long): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, hour)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-
-        val calendarNow = Calendar.getInstance()
-        if (calendarNow.timeInMillis < calendar.timeInMillis) {
-            calendarNow.timeInMillis = calendarNow.timeInMillis + TimeUnit.DAYS.toMillis(repeat)
-        }
-
-        val delta = calendarNow.timeInMillis - calendar.timeInMillis
-        return if (delta > PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS) delta else PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS
     }
 }

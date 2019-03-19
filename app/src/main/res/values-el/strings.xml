@@ -6,7 +6,6 @@
     <string name="participant_id">ID</string>
     <string name="save">Αποθήκευση</string>
     <string name="email">your@email.com</string>
-    <string name="dateOfBirth">Ημερομηνία Γέννησης</string>
     <string name="welcome">Καλώς Ορίσατε</string>
     <string name="today_rescue_count"> Πόσες φορές χρειάστηκε να πάρετε το φάρμακο "διάσωσης" σήμερα?</string>
     <string name="today_regulates">Έχετε πάρει το φάρμακο που ρυθμίζει το άσθμα σας σήμερα;</string>

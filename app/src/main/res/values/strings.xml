@@ -6,7 +6,6 @@
     <string name="participant_id">ID</string>
     <string name="save">Save</string>
     <string name="email">your@email.com</string>
-    <string name="dateOfBirth">Date of Birth</string>
     <string name="welcome">Welcome</string>
     <string name="today_rescue_count">How many times did you need to take your rescue medication today?</string>
     <string name="today_regulates">Did you take the medication that regulates your asthma today?</string>
