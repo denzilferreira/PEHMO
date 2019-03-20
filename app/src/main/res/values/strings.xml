@@ -26,7 +26,7 @@
     <string name="reflect_frequency_symptoms_medication">Reflecting frequency of symptoms or daily frequency of medication use</string>
     <string name="frequency_nocturnal">Nocturnal wake ups caused by symptoms</string>
     <string name="rate_once">Once</string>
-    <string name="rate_twothree">2-3 times</string>
+    <string name="rate_twothree">2&#8211;3 times</string>
     <string name="rate_fourplus">4 times or more</string>
     <string name="frequency_opening_meds">Opening medication of asthma (short-acting)</string>
     <string name="estimate_asthma_balance">Your own estimation about asthma balance</string>

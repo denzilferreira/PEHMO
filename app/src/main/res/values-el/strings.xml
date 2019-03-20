@@ -26,7 +26,7 @@
     <string name="reflect_frequency_symptoms_medication">Αντικατοπτρίζοντας τη συχνότητα των συμπτωμάτων ή την καθημερινή συχνότητα χρήσης φαρμάκων</string>
     <string name="frequency_nocturnal">Νυχτερινή αφύπνιση λόγω συμπτωμάτων</string>
     <string name="rate_once"> 1 φορά </string>
-    <string name="rate_twothree">2-3 φορές </string>
+    <string name="rate_twothree">2&#8211;3 φορές </string>
     <string name="rate_fourplus">4 φορές ή περισσότερο</string>
     <string name="frequency_opening_meds">Ανοίγοντας το φάρμακο του άσθματος (βραχείας δράσης)</string>
     <string name="estimate_asthma_balance">Η δική σας εκτίμηση για την ισορροπία του άσθματος</string>

@@ -128,16 +128,14 @@ class Home : AppCompatActivity() {
     }
 
     fun startSensing() {
-        val constraints = Constraints.Builder().setRequiresBatteryNotLow(true).build()
-
         //Set location logging every 15 minutes
-        val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).setConstraints(constraints).build()
+        val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build()
         WorkManager.getInstance().enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, locationTracking)
 
         //Set bluetooth scanning if available or makes sense
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             if (!participantData?.ruuviTag.isNullOrBlank()) {
-                val bluetoothTracking = PeriodicWorkRequestBuilder<BluetoothWorker>(15, TimeUnit.MINUTES).setConstraints(constraints).build()
+                val bluetoothTracking = PeriodicWorkRequestBuilder<BluetoothWorker>(15, TimeUnit.MINUTES).build()
                 WorkManager.getInstance().enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, bluetoothTracking)
             }
         }
@@ -147,8 +145,7 @@ class Home : AppCompatActivity() {
         WorkManager.getInstance().enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, surveyReminder)
 
         //Set data sync to server every 30 minutes
-        val constraintsSync = Constraints.Builder().setRequiredNetworkType(NetworkType.UNMETERED).build() //only sync when on WiFi
-        val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES).setConstraints(constraintsSync).build()
+        val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(30, TimeUnit.MINUTES).build()
         WorkManager.getInstance().enqueueUniquePeriodicWork("SYNC_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, dataSync)
     }
 
