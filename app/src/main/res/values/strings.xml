@@ -11,7 +11,7 @@
     <string name="today_regulates">Did you take the medication that regulates your asthma today?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="other_asthma_meds">What other medicine has you taken for asthma?</string>
+    <string name="other_asthma_meds">What other medicine have you taken for asthma?</string>
     <string name="hint_meds_name">If any, what medicine?</string>
     <string name="symptoms">Symptoms</string>
     <string name="reflect_severity_symptoms">Reflecting daily severity of symptoms</string>
@@ -37,7 +37,7 @@
     <string name="day_act_normal">Did your asthma prevent you to act normally in work, school, or home / leisure time today?</string>
     <string name="changes_medication_dose">Changes in medication and new dose?</string>
     <string name="cold_today">Did you have a cold today?</string>
-    <string name="doctorVisit">DId you visit a doctor today because of asthma or allergy?</string>
+    <string name="doctorVisit">Did you visit a doctor today because of asthma or allergy?</string>
     <string name="otherConsiderations">Other considerations?</string>
     <string name="thanks">Thanks!</string>
     <string name="survey_notification_title">EXTREMA survey</string>

@@ -1,22 +1,17 @@
 package fi.oulu.ubicomp.extrema
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
+import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
-import androidx.work.*
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
@@ -30,9 +25,9 @@ import fi.oulu.ubicomp.extrema.workers.LocationWorker
 import fi.oulu.ubicomp.extrema.workers.SurveyWorker
 import fi.oulu.ubicomp.extrema.workers.SyncWorker
 import kotlinx.android.synthetic.main.activity_account.*
+import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.doAsync
 import org.json.JSONObject
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 class Home : AppCompatActivity() {
@@ -43,10 +38,10 @@ class Home : AppCompatActivity() {
         const val EXTREMA_PREFS = "fi.oulu.ubicomp.extrema.prefs"
         const val UUID = "deviceId"
         const val STUDY_URL = "https://co2.awareframework.com:8443/insert"
-        var participantData: Participant? = null
     }
 
     var db: ExtremaDatabase? = null
+    var participantData: Participant? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,40 +56,47 @@ class Home : AppCompatActivity() {
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
 
         btnSaveParticipant.setOnClickListener {
-            val participant = Participant(null,
-                    participantEmail = participantEmail.text.toString(),
-                    participantName = participantName.text.toString(),
-                    participantId = participantId.text.toString(),
-                    ruuviTag = ruuviTag.text.toString(),
-                    onboardDate = System.currentTimeMillis()
-            )
 
-            doAsync {
-                db?.participantDao()?.insert(participant)
-                participantData = db?.participantDao()?.getParticipant()
-
-                val jsonBuilder = GsonBuilder()
-                val jsonPost = jsonBuilder.create()
-
-                val requestQueue = Volley.newRequestQueue(applicationContext)
-
-                val data = JSONObject()
-                        .put("tableName", "participant")
-                        .put("deviceId", prefs.getString(UUID, ""))
-                        .put("data", jsonPost.toJson(participantData))
-                        .put("timestamp", System.currentTimeMillis())
-
-                val serverRequest = JsonObjectRequest(Request.Method.POST, STUDY_URL, data,
-                    Response.Listener {
-                        println(it.toString(5))
-                    },
-                    Response.ErrorListener {}
+            if(participantName.text.isBlank() || participantId.text.isBlank() || participantEmail.text.isBlank()) {
+                participantName.backgroundColor = Color.RED
+                participantId.backgroundColor = Color.RED
+                participantEmail.backgroundColor = Color.RED
+            } else {
+                val participant = Participant(null,
+                        participantEmail = participantEmail.text.toString(),
+                        participantName = participantName.text.toString(),
+                        participantId = participantId.text.toString(),
+                        ruuviTag = ruuviTag.text.toString(),
+                        onboardDate = System.currentTimeMillis()
                 )
-                requestQueue.add(serverRequest)
 
-                finish()
-                startActivity(Intent(applicationContext, ViewSurvey::class.java))
-                startSensing()
+                doAsync {
+                    db?.participantDao()?.insert(participant)
+                    participantData = db?.participantDao()?.getParticipant()
+
+                    val jsonBuilder = GsonBuilder()
+                    val jsonPost = jsonBuilder.create()
+
+                    val requestQueue = Volley.newRequestQueue(applicationContext)
+
+                    val data = JSONObject()
+                            .put("tableName", "participant")
+                            .put("deviceId", prefs.getString(UUID, ""))
+                            .put("data", jsonPost.toJson(participantData))
+                            .put("timestamp", System.currentTimeMillis())
+
+                    val serverRequest = JsonObjectRequest(Request.Method.POST, STUDY_URL, data,
+                            Response.Listener {
+                                println(it.toString(5))
+                            },
+                            Response.ErrorListener {}
+                    )
+                    requestQueue.add(serverRequest)
+
+                    finish()
+                    startActivity(Intent(applicationContext, ViewSurvey::class.java))
+                    startSensing()
+                }
             }
         }
     }

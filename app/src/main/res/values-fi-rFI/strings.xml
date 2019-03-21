@@ -5,5 +5,5 @@
     <string name="personal_details">Henkilötiedot</string>
     <string name="name">Nimi</string>
     <string name="participant_id">ID</string>
-    <string name="email">sinun@sähköpoisti.com</string>
+    <string name="email">sinun@sähköposti.com</string>
 </resources>

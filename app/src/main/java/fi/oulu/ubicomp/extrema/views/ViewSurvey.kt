@@ -1,20 +1,15 @@
 package fi.oulu.ubicomp.extrema.views
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.room.Room
-import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
-import com.google.gson.GsonBuilder
-import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.R
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
+import fi.oulu.ubicomp.extrema.database.Participant
 import fi.oulu.ubicomp.extrema.database.Survey
 import kotlinx.android.synthetic.main.activity_view_survey.*
 import org.jetbrains.anko.doAsync
@@ -42,6 +37,7 @@ class ViewSurvey : AppCompatActivity() {
 
     var surveyData : JSONObject = JSONObject()
     var db: ExtremaDatabase? = null
+    var participantData: Participant? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,13 +45,14 @@ class ViewSurvey : AppCompatActivity() {
 
         doAsync {
             db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+            participantData = db?.participantDao()?.getParticipant()
         }
     }
 
     override fun onResume() {
         super.onResume()
 
-        welcomeHeader.text = "${resources.getString(R.string.welcome)} ${Home.participantData?.participantName}"
+        welcomeHeader.text = "${resources.getString(R.string.welcome)} ${participantData?.participantName}"
 
         rescueCount = timesRescue
 
@@ -137,7 +134,7 @@ class ViewSurvey : AppCompatActivity() {
 
             doAsync {
                 val survey = Survey(null,
-                        participantId = Home.participantData?.participantId,
+                        participantId = participantData?.participantId,
                         entryDate = System.currentTimeMillis(),
                         surveyData = surveyData.toString())
 
