@@ -46,6 +46,8 @@ class ViewSurvey : AppCompatActivity() {
         doAsync {
             db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
             participantData = db?.participantDao()?.getParticipant()
+
+            welcomeHeader.text = "${resources.getString(R.string.welcome)} ${participantData?.participantName}"
         }
     }
 

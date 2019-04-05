@@ -85,15 +85,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/participantId" />
 
-    <EditText
-        android:id="@+id/ruuviTag"
-        android:layout_width="332dp"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="00:00:00:00:00 (RuuviTag)"
-        android:inputType="text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/participantEmail" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

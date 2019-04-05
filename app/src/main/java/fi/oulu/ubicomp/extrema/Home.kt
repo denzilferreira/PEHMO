@@ -25,12 +25,13 @@ import fi.oulu.ubicomp.extrema.workers.LocationWorker
 import fi.oulu.ubicomp.extrema.workers.SurveyWorker
 import fi.oulu.ubicomp.extrema.workers.SyncWorker
 import kotlinx.android.synthetic.main.activity_account.*
+import org.altbeacon.beacon.*
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.doAsync
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
-class Home : AppCompatActivity() {
+class Home : AppCompatActivity(), BeaconConsumer {
 
     companion object {
         const val TAG = "EXTREMA"
@@ -38,10 +39,20 @@ class Home : AppCompatActivity() {
         const val EXTREMA_PREFS = "fi.oulu.ubicomp.extrema.prefs"
         const val UUID = "deviceId"
         const val STUDY_URL = "https://co2.awareframework.com:8443/insert"
+
+        const val RuuviV2and4_LAYOUT = "s:0-1=feaa,m:2-2=10,p:3-3:-41,i:4-21v"
+        const val RuuviV3_LAYOUT = "x,m:0-2=990403,i:2-15,d:2-2,d:3-3,d:4-4,d:5-5,d:6-6,d:7-7,d:8-8,d:9-9,d:10-10,d:11-11,d:12-12,d:13-13,d:14-14,d:15-15"
+        const val RuuviV5_LAYOUT = "x,m:0-2=990405,i:20-25,d:2-2,d:3-3,d:4-4,d:5-5,d:6-6,d:7-7,d:8-8,d:9-9,d:10-10,d:11-11,d:12-12,d:13-13,d:14-14,d:15-15,d:16-16,d:17-17,d:18-18,d:19-19,d:20-20,d:21-21,d:22-22,d:23-23,d:24-24,d:25-25"
+
+        lateinit var ruuvi: Beacon
     }
+
+    lateinit var beaconManager: BeaconManager
+    lateinit var rangeNotifier: RuuviRangeNotifier
 
     var db: ExtremaDatabase? = null
     var participantData: Participant? = null
+    val region: Region = Region("com.ruuvi.station.leRegion", null, null, null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,9 +66,25 @@ class Home : AppCompatActivity() {
 
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
 
+
+        //Check if this device has BLE, scan for RuuviTags if so is true
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            rangeNotifier = RuuviRangeNotifier()
+
+            beaconManager = BeaconManager.getInstanceForApplication(this)
+            beaconManager.backgroundMode = false
+            beaconManager.beaconParsers.clear()
+            beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV2and4_LAYOUT))
+            beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV3_LAYOUT))
+            beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV5_LAYOUT))
+            beaconManager.backgroundScanPeriod = 5000
+            beaconManager.bind(this)
+            beaconManager.startRangingBeaconsInRegion(region)
+        }
+
         btnSaveParticipant.setOnClickListener {
 
-            if(participantName.text.isBlank() || participantId.text.isBlank() || participantEmail.text.isBlank()) {
+            if (participantName.text.isBlank() || participantId.text.isBlank() || participantEmail.text.isBlank()) {
                 participantName.backgroundColor = Color.RED
                 participantId.backgroundColor = Color.RED
                 participantEmail.backgroundColor = Color.RED
@@ -66,7 +93,7 @@ class Home : AppCompatActivity() {
                         participantEmail = participantEmail.text.toString(),
                         participantName = participantName.text.toString(),
                         participantId = participantId.text.toString(),
-                        ruuviTag = ruuviTag.text.toString(),
+                        ruuviTag = ruuvi.bluetoothAddress ?: "",
                         onboardDate = System.currentTimeMillis()
                 )
 
@@ -95,7 +122,7 @@ class Home : AppCompatActivity() {
 
                     finish()
                     startActivity(Intent(applicationContext, ViewSurvey::class.java))
-                    startSensing()
+                    setSampling()
                 }
             }
         }
@@ -118,7 +145,7 @@ class Home : AppCompatActivity() {
                 if (participantData != null) {
                     finish()
                     startActivity(Intent(applicationContext, ViewSurvey::class.java))
-                    startSensing()
+                    setSampling()
                 }
             }
         }
@@ -127,9 +154,36 @@ class Home : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         db?.close()
+
+        beaconManager.removeRangeNotifier(rangeNotifier)
+        beaconManager.stopRangingBeaconsInRegion(region)
+        beaconManager.unbind(this)
     }
 
-    fun startSensing() {
+    override fun onDestroy() {
+        super.onDestroy()
+
+        beaconManager.removeRangeNotifier(rangeNotifier)
+        beaconManager.stopRangingBeaconsInRegion(region)
+        beaconManager.unbind(this)
+    }
+
+    class RuuviRangeNotifier : RangeNotifier {
+        override fun didRangeBeaconsInRegion(beacons: MutableCollection<Beacon>?, region: Region?) {
+            if (beacons?.size ?: 0 > 0) {
+                val closest = beacons?.minBy { it.distance }
+                ruuvi = closest!!
+            }
+        }
+    }
+
+    override fun onBeaconServiceConnect() {
+        if (!beaconManager.rangingNotifiers.contains(rangeNotifier))
+            beaconManager.addRangeNotifier(rangeNotifier)
+        beaconManager.startRangingBeaconsInRegion(region)
+    }
+
+    fun setSampling() {
         //Set location logging every 15 minutes
         val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build()
         WorkManager.getInstance().enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, locationTracking)
