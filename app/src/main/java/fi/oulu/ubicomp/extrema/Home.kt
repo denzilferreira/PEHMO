@@ -52,7 +52,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
     var db: ExtremaDatabase? = null
     var participantData: Participant? = null
-    val region: Region = Region("com.ruuvi.station.leRegion", null, null, null)
+    val region: Region = Region("fi.oulu.ubicomp.extrema", null, null, null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,22 +65,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
         setContentView(R.layout.activity_account)
 
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
-
-
-        //Check if this device has BLE, scan for RuuviTags if so is true
-        if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            rangeNotifier = RuuviRangeNotifier()
-
-            beaconManager = BeaconManager.getInstanceForApplication(this)
-            beaconManager.backgroundMode = false
-            beaconManager.beaconParsers.clear()
-            beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV2and4_LAYOUT))
-            beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV3_LAYOUT))
-            beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV5_LAYOUT))
-            beaconManager.backgroundScanPeriod = 5000
-            beaconManager.bind(this)
-            beaconManager.startRangingBeaconsInRegion(region)
-        }
 
         btnSaveParticipant.setOnClickListener {
 
@@ -148,16 +132,29 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     setSampling()
                 }
             }
+
+            if (participantData == null) {
+                //Check if this device has BLE, scan for RuuviTags if so is true
+                if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                    rangeNotifier = RuuviRangeNotifier()
+
+                    beaconManager = BeaconManager.getInstanceForApplication(this)
+                    beaconManager.backgroundMode = false
+                    beaconManager.beaconParsers.clear()
+                    beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV2and4_LAYOUT))
+                    beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV3_LAYOUT))
+                    beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV5_LAYOUT))
+                    beaconManager.backgroundScanPeriod = 5000
+                    beaconManager.bind(this)
+                    beaconManager.startRangingBeaconsInRegion(region)
+                }
+            }
         }
     }
 
     override fun onPause() {
         super.onPause()
         db?.close()
-
-        beaconManager.removeRangeNotifier(rangeNotifier)
-        beaconManager.stopRangingBeaconsInRegion(region)
-        beaconManager.unbind(this)
     }
 
     override fun onDestroy() {
