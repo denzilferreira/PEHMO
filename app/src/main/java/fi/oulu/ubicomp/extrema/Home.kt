@@ -77,7 +77,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                         participantEmail = participantEmail.text.toString(),
                         participantName = participantName.text.toString(),
                         participantId = participantId.text.toString(),
-                        ruuviTag = ruuvi.bluetoothAddress ?: "",
+                        ruuviTag = ruuvi?.bluetoothAddress ?: "",
                         onboardDate = System.currentTimeMillis()
                 )
 
@@ -168,8 +168,10 @@ class Home : AppCompatActivity(), BeaconConsumer {
     class RuuviRangeNotifier : RangeNotifier {
         override fun didRangeBeaconsInRegion(beacons: MutableCollection<Beacon>?, region: Region?) {
             if (beacons?.size ?: 0 > 0) {
-                val closest = beacons?.minBy { it.distance }
+                val closest = beacons?.maxBy { it.rssi }
                 ruuvi = closest!!
+
+                println("Closest RuuviTag: ${ruuvi.bluetoothAddress}")
             }
         }
     }
