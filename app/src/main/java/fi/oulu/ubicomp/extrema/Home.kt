@@ -1,6 +1,7 @@
 package fi.oulu.ubicomp.extrema
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -35,6 +36,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
     companion object {
         const val TAG = "EXTREMA"
+
         const val EXTREMA_PERMISSIONS = 12345
         const val EXTREMA_PREFS = "fi.oulu.ubicomp.extrema.prefs"
         const val UUID = "deviceId"
@@ -45,6 +47,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
         const val RuuviV5_LAYOUT = "x,m:0-2=990405,i:20-25,d:2-2,d:3-3,d:4-4,d:5-5,d:6-6,d:7-7,d:8-8,d:9-9,d:10-10,d:11-11,d:12-12,d:13-13,d:14-14,d:15-15,d:16-16,d:17-17,d:18-18,d:19-19,d:20-20,d:21-21,d:22-22,d:23-23,d:24-24,d:25-25"
 
         lateinit var ruuvi: Beacon
+        lateinit var beaconConsumer : BeaconConsumer
     }
 
     lateinit var beaconManager: BeaconManager
@@ -65,6 +68,11 @@ class Home : AppCompatActivity(), BeaconConsumer {
         setContentView(R.layout.activity_account)
 
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+
+        beaconConsumer = this
+        beaconManager = BeaconManager.getInstanceForApplication(applicationContext)
+        rangeNotifier = RuuviRangeNotifier()
+        rangeNotifier.setContext(applicationContext)
 
         btnSaveParticipant.setOnClickListener {
 
@@ -124,29 +132,25 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN),
                     EXTREMA_PERMISSIONS)
         } else {
+
             doAsync {
                 participantData = db?.participantDao()?.getParticipant()
                 if (participantData != null) {
                     finish()
                     startActivity(Intent(applicationContext, ViewSurvey::class.java))
                     setSampling()
-                }
-            }
-
-            if (participantData == null) {
-                //Check if this device has BLE, scan for RuuviTags if so is true
-                if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                    rangeNotifier = RuuviRangeNotifier()
-
-                    beaconManager = BeaconManager.getInstanceForApplication(this)
-                    beaconManager.backgroundMode = false
-                    beaconManager.beaconParsers.clear()
-                    beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV2and4_LAYOUT))
-                    beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV3_LAYOUT))
-                    beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV5_LAYOUT))
-                    beaconManager.backgroundScanPeriod = 5000
-                    beaconManager.bind(this)
-                    beaconManager.startRangingBeaconsInRegion(region)
+                } else {
+                    //Check if this device has BLE, scan for RuuviTags if so is true
+                    if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                        beaconManager.backgroundMode = false
+                        beaconManager.beaconParsers.clear()
+                        beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV2and4_LAYOUT))
+                        beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV3_LAYOUT))
+                        beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV5_LAYOUT))
+                        beaconManager.backgroundScanPeriod = 5000
+                        beaconManager.bind(beaconConsumer)
+                        beaconManager.startRangingBeaconsInRegion(region)
+                    }
                 }
             }
         }
@@ -160,20 +164,9 @@ class Home : AppCompatActivity(), BeaconConsumer {
     override fun onDestroy() {
         super.onDestroy()
 
-        beaconManager.removeRangeNotifier(rangeNotifier)
-        beaconManager.stopRangingBeaconsInRegion(region)
-        beaconManager.unbind(this)
-    }
-
-    class RuuviRangeNotifier : RangeNotifier {
-        override fun didRangeBeaconsInRegion(beacons: MutableCollection<Beacon>?, region: Region?) {
-            if (beacons?.size ?: 0 > 0) {
-                val closest = beacons?.maxBy { it.rssi }
-                ruuvi = closest!!
-
-                println("Closest RuuviTag: ${ruuvi.bluetoothAddress}")
-            }
-        }
+        beaconManager?.removeRangeNotifier(rangeNotifier)
+        beaconManager?.stopRangingBeaconsInRegion(region)
+        beaconManager?.unbind(beaconConsumer)
     }
 
     override fun onBeaconServiceConnect() {
@@ -182,26 +175,26 @@ class Home : AppCompatActivity(), BeaconConsumer {
         beaconManager.startRangingBeaconsInRegion(region)
     }
 
-    fun setSampling() {
+    private fun setSampling() {
         //Set location logging every 15 minutes
         val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build()
-        WorkManager.getInstance().enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, locationTracking)
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, locationTracking)
 
         //Set bluetooth scanning if available or makes sense
-        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             if (!participantData?.ruuviTag.isNullOrBlank()) {
                 val bluetoothTracking = PeriodicWorkRequestBuilder<BluetoothWorker>(15, TimeUnit.MINUTES).build()
-                WorkManager.getInstance().enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, bluetoothTracking)
+                WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, bluetoothTracking)
             }
         }
 
         //check every hour if it's a good time to show the survey
         val surveyReminder = PeriodicWorkRequestBuilder<SurveyWorker>(1, TimeUnit.HOURS).build()
-        WorkManager.getInstance().enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, surveyReminder)
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, surveyReminder)
 
         //Set data sync to server every 30 minutes
         val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(30, TimeUnit.MINUTES).build()
-        WorkManager.getInstance().enqueueUniquePeriodicWork("SYNC_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, dataSync)
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SYNC_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, dataSync)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -209,6 +202,22 @@ class Home : AppCompatActivity(), BeaconConsumer {
             ActivityCompat.requestPermissions(this,
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN),
                     EXTREMA_PERMISSIONS)
+        }
+    }
+
+    class RuuviRangeNotifier : RangeNotifier {
+
+        lateinit var mContext : Context
+
+        fun setContext(context : Context) {
+            mContext = context
+        }
+
+        override fun didRangeBeaconsInRegion(beacons: MutableCollection<Beacon>?, region: Region?) {
+            if (beacons?.size ?: 0 > 0) {
+                val closest = beacons?.maxBy { it.rssi }
+                ruuvi = closest!!
+            }
         }
     }
 }
