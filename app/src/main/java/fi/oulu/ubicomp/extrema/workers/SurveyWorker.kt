@@ -18,7 +18,7 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
 
     override fun doWork(): Result {
 
-        if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) != 19) return Result.success()
+        if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) != 21) return Result.success()
 
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
