@@ -92,20 +92,32 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     participantEmail.backgroundColor = Color.RED
                 }
             } else {
-
-                val participant = try {
+                val participant =   if(resources.getString(R.string.locale)=="el") {
                     Participant(null,
                             participantEmail = participantEmail.text.toString(),
                             participantName = participantName.text.toString(),
                             participantId = participantId.text.toString(),
-                            ruuviTag = ruuvi?.bluetoothAddress ?: "",
+                            ruuviTag =  "",
                             onboardDate = System.currentTimeMillis()
                     )
-                } catch (e: UninitializedPropertyAccessException) {
-                    ruuviError.text = getString(R.string.ruuviError)
-                    ruuviError.backgroundColor=Color.RED
-                    return@setOnClickListener
-                }
+               }else{
+                    try {
+                        Participant(null,
+                                participantEmail = participantEmail.text.toString(),
+                                participantName = participantName.text.toString(),
+                                participantId = participantId.text.toString(),
+                                ruuviTag = ruuvi?.bluetoothAddress ?: "",
+                                onboardDate = System.currentTimeMillis()
+                        )
+
+                    } catch (e: UninitializedPropertyAccessException) {
+                        ruuviError.text = getString(R.string.ruuviError)
+                        ruuviError.backgroundColor=Color.RED
+                        return@setOnClickListener
+                    }
+               }
+
+
 
                 doAsync {
                     db?.participantDao()?.insert(participant)
@@ -141,11 +153,9 @@ class Home : AppCompatActivity(), BeaconConsumer {
     override fun onResume() {
         super.onResume()
 
-        val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-        if (bluetoothAdapter?.isEnabled == false) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableBtIntent, EXTREMA_PERMISSIONS)
-        }
+
+
+
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
@@ -166,6 +176,14 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     startActivity(Intent(applicationContext, ViewSurvey::class.java))
                     setSampling()
                 } else {
+
+                    if(resources.getString(R.string.locale) != "el"){
+                        val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+                        if (bluetoothAdapter?.isEnabled == false) {
+                            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                            startActivityForResult(enableBtIntent, EXTREMA_PERMISSIONS)
+                        }
+                    }
                     //Check if this device has BLE, scan for RuuviTags if so is true
                     if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                         beaconManager.backgroundMode = false

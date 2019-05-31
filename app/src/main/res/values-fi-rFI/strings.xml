@@ -45,4 +45,5 @@
     <string name="rate_strong">Voimakasta</string>
     <string name="symptom_flue">Nuhakuumeen (”flunssan”) oireita</string>
     <string name="ruuviError">Ei liitetty RuuviTag.</string>
+    <string name="locale">fi</string>
 </resources>

@@ -44,4 +44,5 @@
     <string name="survey_notification_text">Press here to answer your daily symptoms!</string>
     <string name="symptom_flue">Symptoms of a common cold (\"flue\")</string>
     <string name="ruuviError">No connected RuuviTag.</string>
+    <string name="locale">en</string>
 </resources>
