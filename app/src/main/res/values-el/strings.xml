@@ -42,4 +42,6 @@
     <string name="thanks">Ευχαριστώ!</string>
     <string name="survey_notification_title">EXTREMA survey</string>
     <string name="survey_notification_text">Πατήστε εδώ για να απαντήσετε στα καθημερινά σας συμπτώματα!</string>
+    <string name="symptom_flue">Συμπτώματα ενός κοινού κρυολογήματος (\"γρίπη\")</string>
+    <string name="ruuviError">Δεν έχει συνδεθεί RuuviTag.</string>
 </resources>

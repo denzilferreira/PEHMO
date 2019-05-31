@@ -14,7 +14,7 @@
     <string name="other_asthma_meds">What other medicine have you taken for asthma?</string>
     <string name="hint_meds_name">If any, what medicine?</string>
     <string name="symptoms">Symptoms</string>
-    <string name="reflect_severity_symptoms">Reflecting daily severity of symptoms</string>
+    <string name="reflect_severity_symptoms">Options reflecting daily severity of symptoms:</string>
     <string name="symptom_shortness_breath">Shortness of breath</string>
     <string name="symptom_cough">Cough</string>
     <string name="symptom_phlegm">Phlegm production</string>
@@ -22,13 +22,13 @@
     <string name="rate_not_at_all">Not at all</string>
     <string name="rate_mild">Mild</string>
     <string name="rate_moderate">Moderate</string>
-    <string name="rate_strong">Strong</string>
+    <string name="rate_strong">Severe</string>
     <string name="reflect_frequency_symptoms_medication">Reflecting frequency of symptoms or daily frequency of medication use</string>
     <string name="frequency_nocturnal">Nocturnal wake ups caused by symptoms</string>
     <string name="rate_once">Once</string>
     <string name="rate_twothree">2&#8211;3 times</string>
     <string name="rate_fourplus">4 times or more</string>
-    <string name="frequency_opening_meds">Opening medication of asthma (short-acting)</string>
+    <string name="frequency_opening_meds">Rescue medication of asthma (short-acting)</string>
     <string name="estimate_asthma_balance">Your own estimation about asthma balance</string>
     <string name="estimate_good">Good</string>
     <string name="estimate_more_less_controlled">More or less under control</string>
@@ -42,4 +42,6 @@
     <string name="thanks">Thanks!</string>
     <string name="survey_notification_title">EXTREMA survey</string>
     <string name="survey_notification_text">Press here to answer your daily symptoms!</string>
+    <string name="symptom_flue">Symptoms of a common cold (\"flue\")</string>
+    <string name="ruuviError">No connected RuuviTag.</string>
 </resources>

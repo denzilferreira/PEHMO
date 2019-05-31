@@ -31,16 +31,18 @@
     <string name="survey_notification_title">EXTREMA survey</string>
     <string name="survey_notification_text">Napauta tätä, jos haluat vastata päivittäisiin oireisiin!</string>
     <string name="reflect_frequency_symptoms_medication">Heijastavat oireiden esiintymistiheyttä tai päivittäistä lääkkeiden käyttöä</string>
-    <string name="reflect_severity_symptoms">Heijastavat oireiden päivittäistä vakavuutta</string>
+    <string name="reflect_severity_symptoms">"Päivittäisten oireiden vakavuutta kuvaavat vaihtoehdot: "</string>
     <string name="save">Tallentaa</string>
     <string name="today_regulates">Otitko lääkkeen, joka säätelee astmaa tänään?</string>
     <string name="welcome">Tervetuloa</string>
     <string name="yes">Kyllä</string>
     <string name="cold_today">Onko sinulla tänään kylmä?</string>
     <string name="changes_medication_dose">Muutokset lääkkeissä ja uudessa annoksessa?</string>
-    <string name="frequency_opening_meds">Astman avaava lääkitys (lyhytvaikutteinen)</string>
+    <string name="frequency_opening_meds">Kuinka usein otit avaavaa astmalääkettä tänään?</string>
     <string name="hint_meds_name">Jos mitään, Mitä lääkettä</string>
     <string name="other_asthma_meds">Mitä muita lääkkeitä olet ottanut astman hoitoon?</string>
-    <string name="otherConsiderations">Muut näkökohdat?</string>
-    <string name="rate_strong">Voimakas</string>
+    <string name="otherConsiderations">Muuta huomioitavaa terveydentilastasi?</string>
+    <string name="rate_strong">Voimakasta</string>
+    <string name="symptom_flue">Nuhakuumeen (”flunssan”) oireita</string>
+    <string name="ruuviError">Ei liitetty RuuviTag.</string>
 </resources>

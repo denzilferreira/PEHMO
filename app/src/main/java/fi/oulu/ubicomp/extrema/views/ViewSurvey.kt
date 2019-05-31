@@ -18,19 +18,20 @@ import org.json.JSONObject
 
 class ViewSurvey : AppCompatActivity() {
 
-    lateinit var rescueCount : EditText
-    lateinit var regulateAsthma : RadioGroup
-    lateinit var otherMeds : EditText
+    //lateinit var rescueCount : EditText
+    //lateinit var regulateAsthma : RadioGroup
+    //lateinit var otherMeds : EditText
     lateinit var symptomShortness : RadioGroup
     lateinit var symptomCough : RadioGroup
     lateinit var symptomPhlegm : RadioGroup
     lateinit var symptomWheezing : RadioGroup
+    lateinit var symptomFlue:RadioGroup
     lateinit var frequencyNocturnal : RadioGroup
     lateinit var frequencyOpenMeds : RadioGroup
     lateinit var estimationAsthma : RadioGroup
     lateinit var preventNormalLife : RadioGroup
-    lateinit var isColdToday : RadioGroup
-    lateinit var isVisitDoctor : RadioGroup
+//    lateinit var isColdToday : RadioGroup
+//    lateinit var isVisitDoctor : RadioGroup
     lateinit var otherObs : EditText
 
     lateinit var save : Button
@@ -56,9 +57,9 @@ class ViewSurvey : AppCompatActivity() {
 
         welcomeHeader.text = "${resources.getString(R.string.welcome)} ${participantData?.participantName}"
 
-        rescueCount = timesRescue
+       // rescueCount = timesRescue
 
-        otherMeds = otherAsthmaMeds
+       // otherMeds = otherAsthmaMeds
 
         symptomShortness = shortnessBreath
         symptomShortness.setOnCheckedChangeListener { group, checkedId ->
@@ -84,6 +85,12 @@ class ViewSurvey : AppCompatActivity() {
             surveyData.put("symptomWheezing", group.indexOfChild(radioSelected) + 1)
         }
 
+        symptomFlue=flue
+        symptomWheezing.setOnCheckedChangeListener { group, checkedId ->
+            val radioSelected : RadioButton = group.findViewById(checkedId)
+            surveyData.put("symptomFlue", group.indexOfChild(radioSelected) + 1)
+        }
+
         frequencyNocturnal = nocturnal
         frequencyNocturnal.setOnCheckedChangeListener { group, checkedId ->
             val radioSelected : RadioButton = group.findViewById(checkedId)
@@ -102,11 +109,11 @@ class ViewSurvey : AppCompatActivity() {
             surveyData.put("estimationAsthmaBalance", group.indexOfChild(radioSelected) + 1)
         }
 
-        regulateAsthma = regulatesToday
+        /*regulateAsthma = regulatesToday
         regulateAsthma.setOnCheckedChangeListener { group, checkedId ->
             val radioSelected : RadioButton = group.findViewById(checkedId)
             surveyData.put("regulateToday", group.indexOfChild(radioSelected))
-        }
+        }*/
 
         preventNormalLife = preventNormal
         preventNormalLife.setOnCheckedChangeListener { group, checkedId ->
@@ -114,7 +121,7 @@ class ViewSurvey : AppCompatActivity() {
             surveyData.put("preventNormal", group.indexOfChild(radioSelected))
         }
 
-        isColdToday = coldToday
+        /*isColdToday = coldToday
         isColdToday.setOnCheckedChangeListener {group, checkedId ->
             val radioSelected : RadioButton = group.findViewById(checkedId)
             surveyData.put("isColdToday", group.indexOfChild(radioSelected))
@@ -125,13 +132,13 @@ class ViewSurvey : AppCompatActivity() {
             val radioSelected : RadioButton = group.findViewById(checkedId)
             surveyData.put("isVisitDoctor", group.indexOfChild(radioSelected))
         }
-
+*/
         otherObs = otherConsiderations
 
         save = saveDiary
         save.setOnClickListener {
-            surveyData.put("rescueCount", rescueCount.text.toString())
-            surveyData.put("otherMeds", otherMeds.text.toString())
+            //surveyData.put("rescueCount", rescueCount.text.toString())
+            //surveyData.put("otherMeds", otherMeds.text.toString())
             surveyData.put("otherObs", otherObs.text.toString())
 
             doAsync {

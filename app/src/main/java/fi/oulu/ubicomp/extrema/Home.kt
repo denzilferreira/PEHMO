@@ -3,9 +3,12 @@ package fi.oulu.ubicomp.extrema
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
+import android.view.View
+import android.view.View.OnClickListener
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -47,7 +50,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
         const val RuuviV5_LAYOUT = "x,m:0-2=990405,i:20-25,d:2-2,d:3-3,d:4-4,d:5-5,d:6-6,d:7-7,d:8-8,d:9-9,d:10-10,d:11-11,d:12-12,d:13-13,d:14-14,d:15-15,d:16-16,d:17-17,d:18-18,d:19-19,d:20-20,d:21-21,d:22-22,d:23-23,d:24-24,d:25-25"
 
         lateinit var ruuvi: Beacon
-        lateinit var beaconConsumer : BeaconConsumer
+        lateinit var beaconConsumer: BeaconConsumer
     }
 
     lateinit var beaconManager: BeaconManager
@@ -75,19 +78,31 @@ class Home : AppCompatActivity(), BeaconConsumer {
         rangeNotifier.setContext(applicationContext)
 
         btnSaveParticipant.setOnClickListener {
-
-            if (participantName.text.isBlank() || participantId.text.isBlank() || participantEmail.text.isBlank()) {
-                participantName.backgroundColor = Color.RED
-                participantId.backgroundColor = Color.RED
-                participantEmail.backgroundColor = Color.RED
+            if (participantName.text.isBlank() or participantId.text.isBlank() or participantEmail.text.isBlank()) {
+                if (participantName.text.isBlank()) {
+                    participantName.backgroundColor = Color.RED
+                }
+                if (participantId.text.isBlank()) {
+                    participantId.backgroundColor = Color.RED
+                }
+                if (participantEmail.text.isBlank()) {
+                    participantEmail.backgroundColor = Color.RED
+                }
             } else {
-                val participant = Participant(null,
-                        participantEmail = participantEmail.text.toString(),
-                        participantName = participantName.text.toString(),
-                        participantId = participantId.text.toString(),
-                        ruuviTag = ruuvi?.bluetoothAddress ?: "",
-                        onboardDate = System.currentTimeMillis()
-                )
+
+                val participant = try {
+                    Participant(null,
+                            participantEmail = participantEmail.text.toString(),
+                            participantName = participantName.text.toString(),
+                            participantId = participantId.text.toString(),
+                            ruuviTag = ruuvi?.bluetoothAddress ?: "",
+                            onboardDate = System.currentTimeMillis()
+                    )
+                } catch (e: UninitializedPropertyAccessException) {
+                    ruuviError.backgroundColor = Color.RED
+                    ruuviError.text = getString(R.string.ruuviError)
+                    return@setOnClickListener
+                }
 
                 doAsync {
                     db?.participantDao()?.insert(participant)
@@ -126,6 +141,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
+
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this,
@@ -175,6 +191,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
         beaconManager.startRangingBeaconsInRegion(region)
     }
 
+
     private fun setSampling() {
         //Set location logging every 15 minutes
         val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build()
@@ -207,9 +224,9 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
     class RuuviRangeNotifier : RangeNotifier {
 
-        lateinit var mContext : Context
+        lateinit var mContext: Context
 
-        fun setContext(context : Context) {
+        fun setContext(context: Context) {
             mContext = context
         }
 

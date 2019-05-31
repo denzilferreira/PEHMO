@@ -36,7 +36,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
+            <!--<TextView
                 android:id="@+id/q1"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
@@ -82,9 +82,9 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/yes" />
-            </RadioGroup>
+            </RadioGroup>-->
 
-            <TextView
+            <!--<TextView
                 android:id="@+id/textView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -103,7 +103,7 @@
                 android:ems="10"
                 android:hint="@string/hint_meds_name"
                 android:inputType="textMultiLine"
-                android:minLines="3" />
+                android:minLines="3" />-->
 
             <TextView
                 android:layout_width="wrap_content"
@@ -129,8 +129,8 @@
                 android:id="@+id/textView5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:text="@string/symptom_shortness_breath"
+                android:layout_marginTop="8dp"
                 android:textAlignment="viewStart"
                 android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
                 tools:layout_editor_absoluteX="8dp"
@@ -312,15 +312,61 @@
                     android:layout_weight="1"
                     android:text="@string/rate_strong" />
             </RadioGroup>
-
             <TextView
+                android:id="@+id/textView31"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/symptom_flue"
+                android:textAlignment="viewStart"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="435dp"
+                tools:text="@string/symptom_flue" />
+
+            <RadioGroup
+                android:id="@+id/flue"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/flue_not_at_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_not_at_all" />
+
+                <RadioButton
+                    android:id="@+id/flue_mild"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_mild" />
+
+                <RadioButton
+                    android:id="@+id/flue_moderate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_moderate" />
+
+                <RadioButton
+                    android:id="@+id/flue_strong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/rate_strong" />
+            </RadioGroup>
+
+            <!--<TextView
                 android:id="@+id/textView11"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/reflect_frequency_symptoms_medication"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textStyle="bold" />
+                android:textStyle="bold" />-->
 
             <TextView
                 android:id="@+id/textView12"
@@ -329,10 +375,12 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/frequency_nocturnal"
                 android:textAlignment="viewStart"
-                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
+
                 tools:layout_editor_absoluteX="8dp"
                 tools:layout_editor_absoluteY="435dp"
-                tools:text="@string/frequency_nocturnal" />
+                tools:text="@string/frequency_nocturnal"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6"
+                />
 
             <RadioGroup
                 android:id="@+id/nocturnal"
@@ -379,7 +427,7 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/frequency_opening_meds"
                 android:textAlignment="viewStart"
-                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Subtitle2"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6"
                 tools:layout_editor_absoluteX="8dp"
                 tools:layout_editor_absoluteY="435dp"
                 tools:text="@string/frequency_opening_meds" />
@@ -464,7 +512,6 @@
                     android:layout_weight="1"
                     android:text="@string/estimate_not_at_all_control" />
             </RadioGroup>
-
             <TextView
                 android:id="@+id/textView15"
                 android:layout_width="match_parent"
@@ -493,16 +540,17 @@
                     android:text="@string/yes" />
             </RadioGroup>
 
-            <EditText
+
+           <!-- <EditText
                 android:id="@+id/changesMedicationDose"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:hint="@string/changes_medication_dose"
                 android:inputType="textMultiLine"
-                android:minLines="3" />
+                android:minLines="3" />-->
 
-            <TextView
+            <!--<TextView
                 android:id="@+id/textView16"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -529,8 +577,8 @@
                     android:layout_weight="1"
                     android:text="@string/yes" />
             </RadioGroup>
-
-            <TextView
+-->
+            <!--<TextView
                 android:id="@+id/textView17"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -556,7 +604,13 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/yes" />
-            </RadioGroup>
+            </RadioGroup>-->
+            <TextView
+                android:id="@+id/textView71"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/otherConsiderations"
+                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6" />
 
             <EditText
                 android:id="@+id/otherConsiderations"
