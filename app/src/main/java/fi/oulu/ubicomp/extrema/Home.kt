@@ -1,6 +1,7 @@
 package fi.oulu.ubicomp.extrema
 
 import android.Manifest
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -55,6 +56,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
     lateinit var beaconManager: BeaconManager
     lateinit var rangeNotifier: RuuviRangeNotifier
+    lateinit var bluetoothAdapter: BluetoothAdapter
 
     var db: ExtremaDatabase? = null
     var participantData: Participant? = null
@@ -78,6 +80,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
         rangeNotifier.setContext(applicationContext)
 
         btnSaveParticipant.setOnClickListener {
+
             if (participantName.text.isBlank() or participantId.text.isBlank() or participantEmail.text.isBlank()) {
                 if (participantName.text.isBlank()) {
                     participantName.backgroundColor = Color.RED
@@ -99,8 +102,8 @@ class Home : AppCompatActivity(), BeaconConsumer {
                             onboardDate = System.currentTimeMillis()
                     )
                 } catch (e: UninitializedPropertyAccessException) {
-                    ruuviError.backgroundColor = Color.RED
                     ruuviError.text = getString(R.string.ruuviError)
+                    ruuviError.backgroundColor=Color.RED
                     return@setOnClickListener
                 }
 
@@ -138,14 +141,21 @@ class Home : AppCompatActivity(), BeaconConsumer {
     override fun onResume() {
         super.onResume()
 
+        val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+        if (bluetoothAdapter?.isEnabled == false) {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            startActivityForResult(enableBtIntent, EXTREMA_PERMISSIONS)
+        }
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
-
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN),
+                    arrayOf( Manifest.permission.BLUETOOTH,
+                            Manifest.permission.BLUETOOTH_ADMIN,Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                           ),
                     EXTREMA_PERMISSIONS)
         } else {
 
