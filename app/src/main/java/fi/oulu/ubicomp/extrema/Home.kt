@@ -2,14 +2,11 @@ package fi.oulu.ubicomp.extrema
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
-import android.view.View
-import android.view.View.OnClickListener
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -56,7 +53,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
     lateinit var beaconManager: BeaconManager
     lateinit var rangeNotifier: RuuviRangeNotifier
-    lateinit var bluetoothAdapter: BluetoothAdapter
 
     var db: ExtremaDatabase? = null
     var participantData: Participant? = null
@@ -77,7 +73,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
         beaconConsumer = this
         beaconManager = BeaconManager.getInstanceForApplication(applicationContext)
         rangeNotifier = RuuviRangeNotifier()
-        rangeNotifier.setContext(applicationContext)
 
         btnSaveParticipant.setOnClickListener {
 
@@ -92,35 +87,29 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     participantEmail.backgroundColor = Color.RED
                 }
             } else {
-                val participant =   if(resources.getString(R.string.locale)=="el") {
+                val participant = try {
                     Participant(null,
                             participantEmail = participantEmail.text.toString(),
                             participantName = participantName.text.toString(),
                             participantId = participantId.text.toString(),
-                            ruuviTag =  "",
+                            ruuviTag = ruuvi?.bluetoothAddress ?: "",
                             onboardDate = System.currentTimeMillis()
                     )
-               }else{
-                    try {
-                        Participant(null,
-                                participantEmail = participantEmail.text.toString(),
-                                participantName = participantName.text.toString(),
-                                participantId = participantId.text.toString(),
-                                ruuviTag = ruuvi?.bluetoothAddress ?: "",
-                                onboardDate = System.currentTimeMillis()
-                        )
-
-                    } catch (e: UninitializedPropertyAccessException) {
-                        ruuviError.text = getString(R.string.ruuviError)
-                        ruuviError.backgroundColor=Color.RED
-                        return@setOnClickListener
-                    }
-               }
-
-
+                } catch (e : UninitializedPropertyAccessException) {
+                    Participant(null,
+                            participantEmail = participantEmail.text.toString(),
+                            participantName = participantName.text.toString(),
+                            participantId = participantId.text.toString(),
+                            ruuviTag = "",
+                            onboardDate = System.currentTimeMillis()
+                    )
+                }
 
                 doAsync {
                     db?.participantDao()?.insert(participant)
+
+                    Log.d(Home.TAG, participant.toString())
+
                     participantData = db?.participantDao()?.getParticipant()
 
                     val jsonBuilder = GsonBuilder()
@@ -153,38 +142,37 @@ class Home : AppCompatActivity(), BeaconConsumer {
     override fun onResume() {
         super.onResume()
 
-
-
-
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this,
-                    arrayOf( Manifest.permission.BLUETOOTH,
-                            Manifest.permission.BLUETOOTH_ADMIN,Manifest.permission.ACCESS_FINE_LOCATION,
+                    arrayOf(Manifest.permission.BLUETOOTH,
+                            Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.ACCESS_COARSE_LOCATION
-                           ),
+                    ),
                     EXTREMA_PERMISSIONS)
         } else {
 
             doAsync {
+
                 participantData = db?.participantDao()?.getParticipant()
+
                 if (participantData != null) {
+
                     finish()
                     startActivity(Intent(applicationContext, ViewSurvey::class.java))
                     setSampling()
+
                 } else {
 
-                    if(resources.getString(R.string.locale) != "el"){
-                        val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-                        if (bluetoothAdapter?.isEnabled == false) {
-                            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                            startActivityForResult(enableBtIntent, EXTREMA_PERMISSIONS)
-                        }
+                    val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+                    if (bluetoothAdapter?.isEnabled == false) {
+                        val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                        startActivityForResult(enableBtIntent, EXTREMA_PERMISSIONS)
                     }
-                    //Check if this device has BLE, scan for RuuviTags if so is true
+
                     if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                         beaconManager.backgroundMode = false
                         beaconManager.beaconParsers.clear()
@@ -221,24 +209,19 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
 
     private fun setSampling() {
-        //Set location logging every 15 minutes
-        val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build()
+
+        val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build() //Set location logging every 15 minutes
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, locationTracking)
 
-        //Set bluetooth scanning if available or makes sense
-        if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            if (!participantData?.ruuviTag.isNullOrBlank()) {
-                val bluetoothTracking = PeriodicWorkRequestBuilder<BluetoothWorker>(15, TimeUnit.MINUTES).build()
-                WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, bluetoothTracking)
-            }
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) && !participantData?.ruuviTag.isNullOrBlank()) { //Set bluetooth scanning if available or makes sense
+            val bluetoothTracking = PeriodicWorkRequestBuilder<BluetoothWorker>(15, TimeUnit.MINUTES).build()
+            WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, bluetoothTracking)
         }
 
-        //check every hour if it's a good time to show the survey
-        val surveyReminder = PeriodicWorkRequestBuilder<SurveyWorker>(1, TimeUnit.HOURS).build()
+        val surveyReminder = PeriodicWorkRequestBuilder<SurveyWorker>(1, TimeUnit.HOURS).build() //check every hour if it's a good time to show the survey
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, surveyReminder)
 
-        //Set data sync to server every 30 minutes
-        val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(30, TimeUnit.MINUTES).build()
+        val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(30, TimeUnit.MINUTES).build() //Set data sync to server every 30 minutes
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SYNC_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, dataSync)
     }
 
@@ -251,13 +234,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
     }
 
     class RuuviRangeNotifier : RangeNotifier {
-
-        lateinit var mContext: Context
-
-        fun setContext(context: Context) {
-            mContext = context
-        }
-
         override fun didRangeBeaconsInRegion(beacons: MutableCollection<Beacon>?, region: Region?) {
             if (beacons?.size ?: 0 > 0) {
                 val closest = beacons?.maxBy { it.rssi }

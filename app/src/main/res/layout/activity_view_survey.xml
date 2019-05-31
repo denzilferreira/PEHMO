@@ -36,75 +36,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!--<TextView
-                android:id="@+id/q1"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="@string/today_rescue_count"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                tools:text="@string/today_rescue_count" />
-
-            <EditText
-                android:id="@+id/timesRescue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="number" />
-
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/today_regulates"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                tools:text="@string/today_regulates" />
-
-            <RadioGroup
-                android:id="@+id/regulatesToday"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/regulatesNo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/no" />
-
-                <RadioButton
-                    android:id="@+id/regulatesYes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/yes" />
-            </RadioGroup>-->
-
-            <!--<TextView
-                android:id="@+id/textView2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/other_asthma_meds"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                tools:layout_editor_absoluteX="25dp"
-                tools:layout_editor_absoluteY="293dp"
-                tools:text="@string/other_asthma_meds" />
-
-            <EditText
-                android:id="@+id/otherAsthmaMeds"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="@string/hint_meds_name"
-                android:inputType="textMultiLine"
-                android:minLines="3" />-->
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -359,15 +290,6 @@
                     android:text="@string/rate_strong" />
             </RadioGroup>
 
-            <!--<TextView
-                android:id="@+id/textView11"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/reflect_frequency_symptoms_medication"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textStyle="bold" />-->
-
             <TextView
                 android:id="@+id/textView12"
                 android:layout_width="match_parent"
@@ -540,71 +462,6 @@
                     android:text="@string/yes" />
             </RadioGroup>
 
-
-           <!-- <EditText
-                android:id="@+id/changesMedicationDose"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="@string/changes_medication_dose"
-                android:inputType="textMultiLine"
-                android:minLines="3" />-->
-
-            <!--<TextView
-                android:id="@+id/textView16"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/cold_today"
-                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6" />
-
-            <RadioGroup
-                android:id="@+id/coldToday"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/coldTodayNo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/no" />
-
-                <RadioButton
-                    android:id="@+id/coldTodayYes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/yes" />
-            </RadioGroup>
--->
-            <!--<TextView
-                android:id="@+id/textView17"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/doctorVisit"
-                android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6" />
-
-            <RadioGroup
-                android:id="@+id/visitDoctor"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/visitDoctorNo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/no" />
-
-                <RadioButton
-                    android:id="@+id/visitDoctorYes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/yes" />
-            </RadioGroup>-->
             <TextView
                 android:id="@+id/textView71"
                 android:layout_width="match_parent"

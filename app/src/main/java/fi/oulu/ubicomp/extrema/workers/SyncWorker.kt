@@ -31,6 +31,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("deviceId", prefs.getString(Home.UUID, ""))
                         .put("data", jsonPost.toJson(bluetoothRecord))
                         .put("timestamp", System.currentTimeMillis())
+
                 val serverRequest = JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
                             println(it.toString(5))
@@ -54,6 +55,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("deviceId", prefs.getString(Home.UUID, ""))
                         .put("data", jsonPost.toJson(locationRecord))
                         .put("timestamp", System.currentTimeMillis())
+
                 val serverRequest = JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
                             println(it.toString(5))
@@ -77,6 +79,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("deviceId", prefs.getString(Home.UUID, ""))
                         .put("data", jsonPost.toJson(surveyRecord))
                         .put("timestamp", System.currentTimeMillis())
+
                 val serverRequest = JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
                             println(it.toString(5))
