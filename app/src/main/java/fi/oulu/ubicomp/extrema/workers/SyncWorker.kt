@@ -13,6 +13,8 @@ import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import org.json.JSONObject
 
+
+
 class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
     override fun doWork(): Result {
@@ -32,14 +34,20 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("data", jsonPost.toJson(bluetoothRecord))
                         .put("timestamp", System.currentTimeMillis())
 
-                val serverRequest = JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
+                val serverRequest =object :JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
                             println(it.toString(5))
                         },
                         Response.ErrorListener {
                             println("Error ${it.networkResponse}")
                         }
-                )
+                ){
+                    override fun getHeaders(): MutableMap<String, String> {
+                        val params = HashMap<String, String>()
+                        params.put("Content-Type","application/json")
+                        return params
+                    }
+                }
                 requestQueue.add(serverRequest)
             }
             prefs.edit().putLong("bluetooth", pendingBluetooth.last().entryDate).apply()
@@ -56,14 +64,20 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("data", jsonPost.toJson(locationRecord))
                         .put("timestamp", System.currentTimeMillis())
 
-                val serverRequest = JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
+                val serverRequest = object :JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
                             println(it.toString(5))
                         },
                         Response.ErrorListener {
                             println("Error ${it.networkResponse}")
                         }
-                )
+                ){
+                    override fun getHeaders(): MutableMap<String, String> {
+                        val params = HashMap<String, String>()
+                        params.put("Content-Type","application/json")
+                        return params
+                    }
+                }
                 requestQueue.add(serverRequest)
             }
             prefs.edit().putLong("location", pendingLocation.last().entryDate).apply()
@@ -80,15 +94,23 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("data", jsonPost.toJson(surveyRecord))
                         .put("timestamp", System.currentTimeMillis())
 
-                val serverRequest = JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
+                val serverRequest = object: JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
                             println(it.toString(5))
                         },
                         Response.ErrorListener {
                             println("Error ${it.networkResponse}")
                         }
-                )
+                ){
+                    override fun getHeaders(): MutableMap<String, String> {
+                        val params = HashMap<String, String>()
+                        params.put("Content-Type","application/json")
+                        return params
+                    }
+                }
+
                 requestQueue.add(serverRequest)
+
             }
             prefs.edit().putLong("survey", pendingSurvey.last().entryDate).apply()
         }
