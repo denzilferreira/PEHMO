@@ -75,7 +75,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
         rangeNotifier = RuuviRangeNotifier()
 
         btnSaveParticipant.setOnClickListener {
-
             if (participantName.text.isBlank() or participantId.text.isBlank() or participantEmail.text.isBlank()) {
                 if (participantName.text.isBlank()) {
                     participantName.backgroundColor = Color.RED
@@ -154,25 +153,18 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     ),
                     EXTREMA_PERMISSIONS)
         } else {
-
             doAsync {
-
                 participantData = db?.participantDao()?.getParticipant()
-
                 if (participantData != null) {
-
                     finish()
                     startActivity(Intent(applicationContext, ViewSurvey::class.java))
                     setSampling()
-
                 } else {
-
                     val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
                     if (bluetoothAdapter?.isEnabled == false) {
                         val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                         startActivityForResult(enableBtIntent, EXTREMA_PERMISSIONS)
                     }
-
                     if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                         beaconManager.backgroundMode = false
                         beaconManager.beaconParsers.clear()
@@ -199,6 +191,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
         beaconManager?.removeRangeNotifier(rangeNotifier)
         beaconManager?.stopRangingBeaconsInRegion(region)
         beaconManager?.unbind(beaconConsumer)
+        db?.close()
     }
 
     override fun onBeaconServiceConnect() {
@@ -209,7 +202,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
 
     private fun setSampling() {
-
         val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build() //Set location logging every 15 minutes
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, locationTracking)
 
@@ -218,7 +210,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
             WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, bluetoothTracking)
         }
 
-        val surveyReminder = PeriodicWorkRequestBuilder<SurveyWorker>(1, TimeUnit.HOURS).build() //check every hour if it's a good time to show the survey
+        val surveyReminder = PeriodicWorkRequestBuilder<SurveyWorker>(30, TimeUnit.MINUTES).build() //check every 30 minutes if it's a good time to show the survey
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, surveyReminder)
 
         val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(30, TimeUnit.MINUTES).build() //Set data sync to server every 30 minutes
