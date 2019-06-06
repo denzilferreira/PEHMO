@@ -125,4 +125,9 @@ class ViewSurvey : AppCompatActivity() {
             finish()
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        db?.close()
+    }
 }
