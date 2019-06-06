@@ -127,7 +127,9 @@ class Home : AppCompatActivity(), BeaconConsumer {
                             Response.Listener {
                                 println(it.toString(5))
                             },
-                            Response.ErrorListener {}
+                            Response.ErrorListener {
+                                println(it.toString())
+                            }
                     )
                     requestQueue.add(serverRequest)
 
