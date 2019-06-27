@@ -94,7 +94,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                             ruuviTag = ruuvi?.bluetoothAddress ?: "",
                             onboardDate = System.currentTimeMillis()
                     )
-                } catch (e : UninitializedPropertyAccessException) {
+                } catch (e: UninitializedPropertyAccessException) {
                     Participant(null,
                             participantEmail = participantEmail.text.toString(),
                             participantName = participantName.text.toString(),
@@ -133,6 +133,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     requestQueue.add(serverRequest)
 
                     finish()
+
                     startActivity(Intent(applicationContext, ViewSurvey::class.java))
                     setSampling()
                 }
@@ -143,17 +144,24 @@ class Home : AppCompatActivity(), BeaconConsumer {
     override fun onResume() {
         super.onResume()
 
-        if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+        val permissions = arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        )
 
-            ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.BLUETOOTH,
-                            Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                    ),
-                    EXTREMA_PERMISSIONS)
+        if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
+                        || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                    permissions.plus(Manifest.permission.BLUETOOTH)
+                    permissions.plus(Manifest.permission.BLUETOOTH_ADMIN)
+                }
+            }
+
+            ActivityCompat.requestPermissions(this, permissions, EXTREMA_PERMISSIONS)
+
         } else {
             doAsync {
                 participantData = db?.participantDao()?.getParticipant()
@@ -162,12 +170,14 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     startActivity(Intent(applicationContext, ViewSurvey::class.java))
                     setSampling()
                 } else {
-                    val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-                    if (bluetoothAdapter?.isEnabled == false) {
-                        val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                        startActivityForResult(enableBtIntent, EXTREMA_PERMISSIONS)
-                    }
                     if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+
+                        val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+                        if (bluetoothAdapter?.isEnabled == false) {
+                            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                            startActivityForResult(enableBtIntent, EXTREMA_PERMISSIONS)
+                        }
+
                         beaconManager.backgroundMode = false
                         beaconManager.beaconParsers.clear()
                         beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV2and4_LAYOUT))
@@ -221,9 +231,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if (grantResults.contains(PackageManager.PERMISSION_DENIED)) {
-            ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN),
-                    EXTREMA_PERMISSIONS)
+            ActivityCompat.requestPermissions(this, permissions, EXTREMA_PERMISSIONS)
         }
     }
 

@@ -14,6 +14,7 @@ import fi.oulu.ubicomp.extrema.database.Survey
 import kotlinx.android.synthetic.main.activity_view_survey.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
+import org.jetbrains.anko.uiThread
 import org.json.JSONObject
 
 class ViewSurvey : AppCompatActivity() {
@@ -43,14 +44,14 @@ class ViewSurvey : AppCompatActivity() {
             db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
             participantData = db?.participantDao()?.getParticipant()
 
-            welcomeHeader.text = "${resources.getString(R.string.welcome)} ${participantData?.participantName}"
+            uiThread {
+                welcomeHeader.text = "${resources.getString(R.string.welcome)} ${participantData?.participantName}"
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
-
-        welcomeHeader.text = "${resources.getString(R.string.welcome)} ${participantData?.participantName}"
 
         symptomShortness = shortnessBreath
         symptomShortness.setOnCheckedChangeListener { group, checkedId ->
@@ -119,9 +120,12 @@ class ViewSurvey : AppCompatActivity() {
                         surveyData = surveyData.toString())
 
                 db?.surveyDao()?.insert(survey)
+
+                uiThread {
+                    toast(getString(R.string.thanks))
+                }
             }
 
-            toast(getString(R.string.thanks))
             finish()
         }
     }

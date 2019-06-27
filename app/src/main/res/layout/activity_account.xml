@@ -61,7 +61,7 @@
 
     <ImageView
         android:id="@+id/cerh"
-        android:layout_width="417dp"
+        android:layout_width="0dp"
         android:layout_height="142dp"
         android:adjustViewBounds="true"
         android:scaleType="centerCrop"

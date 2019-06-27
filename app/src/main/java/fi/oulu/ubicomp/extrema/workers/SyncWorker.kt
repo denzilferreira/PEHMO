@@ -13,8 +13,6 @@ import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import org.json.JSONObject
 
-
-
 class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
     override fun doWork(): Result {
