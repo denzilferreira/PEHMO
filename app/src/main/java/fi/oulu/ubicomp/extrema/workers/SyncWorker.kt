@@ -21,6 +21,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
         val requestQueue = Volley.newRequestQueue(applicationContext)
 
+        println("Sync started...")
+
         val pendingBluetooth = db.bluetoothDao().getPendingSync(prefs.getLong("bluetooth",0))
         if (pendingBluetooth.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
@@ -34,7 +36,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 val serverRequest =object :JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println(it.toString(5))
+                            println("Sync OK [bluetooth]: ${it.toString(5)}")
+                            prefs.edit().putLong("bluetooth", pendingBluetooth.last().entryDate).apply()
                         },
                         Response.ErrorListener {
                             println("Error ${it.networkResponse}")
@@ -48,7 +51,6 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 }
                 requestQueue.add(serverRequest)
             }
-            prefs.edit().putLong("bluetooth", pendingBluetooth.last().entryDate).apply()
         }
 
         val pendingLocation = db.locationDao().getPendingSync(prefs.getLong("location",0))
@@ -64,7 +66,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 val serverRequest = object :JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println(it.toString(5))
+                            println("Sync OK [locations]: ${it.toString(5)}")
+                            prefs.edit().putLong("location", pendingLocation.last().entryDate).apply()
                         },
                         Response.ErrorListener {
                             println("Error ${it.networkResponse}")
@@ -78,7 +81,6 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 }
                 requestQueue.add(serverRequest)
             }
-            prefs.edit().putLong("location", pendingLocation.last().entryDate).apply()
         }
 
         val pendingSurvey = db.surveyDao().getPendingSync(prefs.getLong("survey",0))
@@ -94,7 +96,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 val serverRequest = object: JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println(it.toString(5))
+                            println("Sync OK [survey]: ${it.toString(5)}")
+                            prefs.edit().putLong("survey", pendingSurvey.last().entryDate).apply()
                         },
                         Response.ErrorListener {
                             println("Error ${it.networkResponse}")
@@ -106,14 +109,14 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         return params
                     }
                 }
-
                 requestQueue.add(serverRequest)
-
             }
-            prefs.edit().putLong("survey", pendingSurvey.last().entryDate).apply()
         }
 
         db.close()
+
+        println("Sync finished!")
+
         return Result.success()
     }
 }
