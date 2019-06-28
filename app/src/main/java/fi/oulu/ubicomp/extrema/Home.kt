@@ -144,7 +144,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
     override fun onResume() {
         super.onResume()
 
-        val permissions = arrayOf(
+        var permissions = arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION
         )
@@ -155,8 +155,9 @@ class Home : AppCompatActivity(), BeaconConsumer {
             if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                 if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
                         || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
-                    permissions.plus(Manifest.permission.BLUETOOTH)
-                    permissions.plus(Manifest.permission.BLUETOOTH_ADMIN)
+
+                    permissions = permissions.plus(Manifest.permission.BLUETOOTH)
+                    permissions = permissions.plus(Manifest.permission.BLUETOOTH_ADMIN)
                 }
             }
 

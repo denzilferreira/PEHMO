@@ -4,14 +4,19 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
+ext.versionMajor = 1
+ext.versionMinor = 1
+
 android {
     compileSdkVersion 29
     defaultConfig {
         applicationId "fi.oulu.ubicomp.extrema"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 9
-        versionName "1.0.9"
+        versionCode computeVersionCode()
+        versionName computeVersionName()
+
+        setProperty("archivesBaseName","extrema-cerh-$versionName") //auto renames the .apk to have the version name
 
         kapt {
             generateStubs = true
@@ -48,6 +53,14 @@ android {
         exclude 'META-INF/ASL2.0'
         exclude 'META-INF/proguard/androidx-annotations.pro'
     }
+}
+
+def computeVersionCode() {
+    return Integer.valueOf(System.env.BUILD_NUMBER ?: 1)
+}
+
+def computeVersionName() {
+    return String.format('%d.%d.%d', versionMajor, versionMinor, computeVersionCode())
 }
 
 if (System.getenv("storeFile") != null && System.getenv("storePassword") != null && System.getenv("keyAlias") != null && System.getenv("keyPassword") != null) {
