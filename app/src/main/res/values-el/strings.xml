@@ -45,4 +45,6 @@
     <string name="symptom_flue">Συμπτώματα ενός κοινού κρυολογήματος (\"γρίπη\")</string>
     <string name="ruuviError">Δεν έχει συνδεθεί RuuviTag.</string>
     <string name="locale">el</string>
+    <string name="sync">Στείλετε</string>
+    <string name="ok">OK</string>
 </resources>

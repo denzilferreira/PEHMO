@@ -18,4 +18,7 @@ interface SurveyDao {
 
     @Query("SELECT * FROM diary WHERE entryDate > :lastSync")
     fun getPendingSync(lastSync : Long) : Array<Survey>
+
+    @Query("SELECT * FROM diary WHERE entryDate > :today")
+    fun getToday(today: Long) : Array<Survey>
 }

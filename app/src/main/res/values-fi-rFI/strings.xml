@@ -46,4 +46,6 @@
     <string name="ruuviError">Ei liitetty RuuviTag.</string>
     <string name="locale">fi</string>
     <string name="welcome">Hei</string>
+    <string name="sync">Lähettää</string>
+    <string name="ok">OK</string>
 </resources>

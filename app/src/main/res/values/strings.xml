@@ -45,4 +45,6 @@
     <string name="symptom_flue">Symptoms of a common cold (flu)</string>
     <string name="ruuviError">No connected RuuviTag.</string>
     <string name="locale">en</string>
+    <string name="sync">Sync</string>
+    <string name="ok">OK</string>
 </resources>

@@ -1,16 +1,22 @@
 package fi.oulu.ubicomp.extrema.views
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import fi.oulu.ubicomp.extrema.R
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.database.Participant
 import fi.oulu.ubicomp.extrema.database.Survey
+import fi.oulu.ubicomp.extrema.workers.SyncWorker
 import kotlinx.android.synthetic.main.activity_view_survey.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -38,6 +44,7 @@ class ViewSurvey : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_view_survey)
 
         doAsync {
@@ -133,5 +140,26 @@ class ViewSurvey : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         db?.close()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.sync, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.menu_account -> {
+                startActivity(Intent(applicationContext, ViewAccount::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                return true
+            }
+            R.id.menu_sync -> {
+                val sync = OneTimeWorkRequest.Builder(SyncWorker::class.java).build()
+                WorkManager.getInstance(applicationContext).enqueue(sync)
+                toast(getString(R.string.sync))
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 }

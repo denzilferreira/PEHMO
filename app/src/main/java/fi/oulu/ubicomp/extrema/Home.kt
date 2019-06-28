@@ -222,7 +222,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
             WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, bluetoothTracking)
         }
 
-        val surveyReminder = PeriodicWorkRequestBuilder<SurveyWorker>(30, TimeUnit.MINUTES).build() //check every 30 minutes if it's a good time to show the survey
+        val surveyReminder = PeriodicWorkRequestBuilder<SurveyWorker>(15, TimeUnit.MINUTES).build() //check every 30 minutes if it's a good time to show the survey
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, surveyReminder)
 
         val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES).build() //Set data sync to server every 15 minutes

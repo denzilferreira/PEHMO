@@ -7,10 +7,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.room.Room
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.R
+import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.views.ViewSurvey
 import java.util.*
 
@@ -19,6 +21,16 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
     override fun doWork(): Result {
 
         if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) != 21) return Result.success()
+
+        val today = Calendar.getInstance()
+        today.set(Calendar.HOUR_OF_DAY,0)
+        today.set(Calendar.MINUTE, 0)
+        today.set(Calendar.SECOND, 0)
+        today.set(Calendar.MILLISECOND, 0)
+
+        val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+        val surveysToday = db.surveyDao().getToday(today.timeInMillis)
+        if (surveysToday.isNotEmpty()) return Result.success()
 
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
