@@ -25,7 +25,10 @@ class UpdateWorker(appContext: Context, workerParams: WorkerParameters) : Worker
                 Response.Listener<JSONObject> {
                     if (it.getInt("id") > BuildConfig.VERSION_CODE) {
                         val relativePath = it.getJSONArray("artifacts").getJSONObject(0).getString("relativePath")
-                        val changes = it.getJSONObject("changeSet").getJSONArray("items").getJSONObject(0).getString("msg")
+                        var changes = it.getJSONObject("changeSet").getJSONArray("items")
+                        var changesStr = ""
+                        if (changes.length() > 0) changesStr = changes.getJSONObject(0).getString("msg")
+
                         val fullPath = "http://jenkins.awareframework.com/job/extrema/lastSuccessfulBuild/artifact/$relativePath"
 
                         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -42,7 +45,7 @@ class UpdateWorker(appContext: Context, workerParams: WorkerParameters) : Worker
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         }
                         updaterIntent.putExtra("fullPath", fullPath)
-                        updaterIntent.putExtra("changes", changes)
+                        updaterIntent.putExtra("changes", changesStr)
 
                         val pendingSurvey = PendingIntent.getService(applicationContext, 0, updaterIntent, 0)
 
