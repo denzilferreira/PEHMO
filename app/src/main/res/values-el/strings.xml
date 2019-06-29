@@ -47,4 +47,6 @@
     <string name="locale">el</string>
     <string name="sync">Στείλετε</string>
     <string name="ok">OK</string>
+    <string name="update_available">Πατήστε εδώ για να ενημερώσετε το EXTREMA στην πιο πρόσφατη έκδοση.</string>
+    <string name="update_title">ενημέρωση</string>
 </resources>

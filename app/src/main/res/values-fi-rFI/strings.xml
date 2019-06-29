@@ -48,4 +48,6 @@
     <string name="welcome">Hei</string>
     <string name="sync">Lähettää</string>
     <string name="ok">OK</string>
+    <string name="update_available">Päivitä EXTREMA uusimpaan versioon painamalla tätä.</string>
+    <string name="update_title">Päivitys</string>
 </resources>

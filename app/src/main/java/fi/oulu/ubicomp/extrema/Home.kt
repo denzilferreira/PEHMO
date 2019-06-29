@@ -22,10 +22,7 @@ import com.google.gson.GsonBuilder
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.database.Participant
 import fi.oulu.ubicomp.extrema.views.ViewSurvey
-import fi.oulu.ubicomp.extrema.workers.BluetoothWorker
-import fi.oulu.ubicomp.extrema.workers.LocationWorker
-import fi.oulu.ubicomp.extrema.workers.SurveyWorker
-import fi.oulu.ubicomp.extrema.workers.SyncWorker
+import fi.oulu.ubicomp.extrema.workers.*
 import kotlinx.android.synthetic.main.activity_account.*
 import org.altbeacon.beacon.*
 import org.jetbrains.anko.backgroundColor
@@ -228,6 +225,9 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
         val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES).build() //Set data sync to server every 15 minutes
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SYNC_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, dataSync)
+
+        val updateCheck = PeriodicWorkRequestBuilder<UpdateWorker>(60, TimeUnit.MINUTES).build() //Check if there are any updates to the app every hour
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("UPDATE_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, updateCheck)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

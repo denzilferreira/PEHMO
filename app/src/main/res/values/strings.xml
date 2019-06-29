@@ -47,4 +47,6 @@
     <string name="locale">en</string>
     <string name="sync">Sync</string>
     <string name="ok">OK</string>
+    <string name="update_available">Press here to update EXTREMA to the latest version.</string>
+    <string name="update_title">Update</string>
 </resources>

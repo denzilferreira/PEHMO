@@ -16,7 +16,7 @@ android {
         versionCode computeVersionCode()
         versionName computeVersionName()
 
-        setProperty("archivesBaseName","extrema-cerh-$versionName") //auto renames the .apk to have the version name
+        setProperty("archivesBaseName","extrema-cerh") //auto renames the signed .apk to be extrema-cerh.apk
 
         kapt {
             generateStubs = true
@@ -63,16 +63,6 @@ def computeVersionName() {
     return String.format('%d.%d.%d', versionMajor, versionMinor, computeVersionCode())
 }
 
-if (System.getenv("storeFile") != null && System.getenv("storePassword") != null && System.getenv("keyAlias") != null && System.getenv("keyPassword") != null) {
-    android.signingConfigs.release.storeFile = file(System.getenv("storeFile"))
-    android.signingConfigs.release.storePassword = System.getenv("storePassword")
-    android.signingConfigs.release.keyAlias = System.getenv("keyAlias")
-    android.signingConfigs.release.keyPassword = System.getenv("keyPassword")
-} else {
-    println("No keystore defined. Unsigned!")
-    android.buildTypes.release.signingConfig = null
-}
-
 dependencies {
     def room_version = "2.1.0"
     def anko_version = "0.10.8"
@@ -102,4 +92,6 @@ dependencies {
     //Bluetooth libraries for RuuviTag support and Beacon scanning
     implementation 'org.altbeacon:android-beacon-library:2.14'
     implementation 'com.neovisionaries:nv-bluetooth:1.8'
+
+    implementation 'com.koushikdutta.ion:ion:2.2.1'
 }
