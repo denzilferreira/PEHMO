@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">EXTREMA</string>
-    <string name="title_activity_extrem">EXTREMA</string>
+    <string name="app_name">PEHMO</string>
+    <string name="title_activity_extrem">PEHMO</string>
     <string name="personal_details">Personal Details</string>
     <string name="name">Name</string>
     <string name="participant_id">ID</string>
@@ -40,13 +40,13 @@
     <string name="doctorVisit">Did you visit a doctor today because of asthma or allergy?</string>
     <string name="otherConsiderations">Other considerations?</string>
     <string name="thanks">Thanks!</string>
-    <string name="survey_notification_title">EXTREMA survey</string>
+    <string name="survey_notification_title">PEHMO survey</string>
     <string name="survey_notification_text">Press here to answer your daily symptoms!</string>
     <string name="symptom_flue">Symptoms of a common cold (flu)</string>
     <string name="ruuviError">No connected RuuviTag.</string>
     <string name="locale">en</string>
     <string name="sync">Sync</string>
     <string name="ok">OK</string>
-    <string name="update_available">Press here to update EXTREMA to the latest version.</string>
+    <string name="update_available">Press here to update PEHMO to the latest version.</string>
     <string name="update_title">Update</string>
 </resources>
