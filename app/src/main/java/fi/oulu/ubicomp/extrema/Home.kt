@@ -2,15 +2,27 @@ package fi.oulu.ubicomp.extrema
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.util.Log
+import android.widget.Adapter
+import android.widget.ArrayAdapter
+import android.widget.SpinnerAdapter
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
@@ -29,7 +41,9 @@ import org.altbeacon.beacon.*
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.doAsync
 import org.json.JSONObject
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 
 class Home : AppCompatActivity(), BeaconConsumer {
 
@@ -39,6 +53,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
         const val EXTREMA_PERMISSIONS = 12345
         const val EXTREMA_PREFS = "fi.oulu.ubicomp.extrema.prefs"
         const val UUID = "deviceId"
+        const val FORCE_SYNC = "forceSync"
         const val STUDY_URL = "https://co2.awareframework.com:8443/insert"
 
         const val RuuviV2and4_LAYOUT = "s:0-1=feaa,m:2-2=10,p:3-3:-41,i:4-21v"
@@ -47,6 +62,12 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
         lateinit var ruuvi: Beacon
         lateinit var beaconConsumer: BeaconConsumer
+
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE participant ADD COLUMN country TEXT")
+            }
+        }
     }
 
     lateinit var beaconManager: BeaconManager
@@ -64,13 +85,21 @@ class Home : AppCompatActivity(), BeaconConsumer {
             prefs.edit().putString(UUID, java.util.UUID.randomUUID().toString()).apply()
         }
 
+        if (!prefs.contains(FORCE_SYNC)) {
+            prefs.edit().putBoolean(FORCE_SYNC, true).apply()
+        }
+
         setContentView(R.layout.activity_account)
 
-        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                .addMigrations(MIGRATION_1_2)
+                .build()
 
         beaconConsumer = this
         beaconManager = BeaconManager.getInstanceForApplication(applicationContext)
         rangeNotifier = RuuviRangeNotifier()
+
+        participantCountry.adapter = getCountries()
 
         btnSaveParticipant.setOnClickListener {
             if (participantName.text.isBlank() or participantId.text.isBlank() or participantEmail.text.isBlank()) {
@@ -90,7 +119,8 @@ class Home : AppCompatActivity(), BeaconConsumer {
                             participantName = participantName.text.toString(),
                             participantId = participantId.text.toString(),
                             ruuviTag = ruuvi?.bluetoothAddress ?: "",
-                            onboardDate = System.currentTimeMillis()
+                            onboardDate = System.currentTimeMillis(),
+                            participantCountry = participantCountry.selectedItem.toString()
                     )
                 } catch (e: UninitializedPropertyAccessException) {
                     Participant(null,
@@ -98,14 +128,15 @@ class Home : AppCompatActivity(), BeaconConsumer {
                             participantName = participantName.text.toString(),
                             participantId = participantId.text.toString(),
                             ruuviTag = "",
-                            onboardDate = System.currentTimeMillis()
+                            onboardDate = System.currentTimeMillis(),
+                            participantCountry = participantCountry.selectedItem.toString()
                     )
                 }
 
                 doAsync {
                     db?.participantDao()?.insert(participant)
 
-                    Log.d(Home.TAG, participant.toString())
+                    Log.d(TAG, participant.toString())
 
                     participantData = db?.participantDao()?.getParticipant()
 
@@ -228,8 +259,19 @@ class Home : AppCompatActivity(), BeaconConsumer {
         val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES).build() //Set data sync to server every 15 minutes
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SYNC_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, dataSync)
 
-        val updateCheck = PeriodicWorkRequestBuilder<UpdateWorker>(60, TimeUnit.MINUTES).build() //Check if there are any updates to the app every hour
-        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("UPDATE_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, updateCheck)
+        //val updateCheck = PeriodicWorkRequestBuilder<UpdateWorker>(60, TimeUnit.MINUTES).build() //Check if there are any updates to the app every hour
+        //WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("UPDATE_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, updateCheck)
+    }
+
+    private fun getCountries(): SpinnerAdapter {
+        val locales = Locale.getAvailableLocales()
+        val countries = ArrayList<String>()
+        for (country in locales) {
+            if (!countries.contains(country.displayCountry) && country.displayCountry.isNotEmpty())
+                countries.add(country.displayCountry)
+        }
+        Collections.sort(countries, String.CASE_INSENSITIVE_ORDER)
+        return ArrayAdapter(applicationContext, android.R.layout.simple_spinner_item, countries)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

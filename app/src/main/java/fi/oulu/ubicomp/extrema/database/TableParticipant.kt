@@ -9,7 +9,8 @@ data class Participant(
         @ColumnInfo(name = "participantName") var participantName: String,
         @ColumnInfo(name = "participantEmail") var participantEmail: String?,
         @ColumnInfo(name = "ruuviTag") var ruuviTag: String?,
-        @ColumnInfo(name = "onboardDate") var onboardDate : Long
+        @ColumnInfo(name = "onboardDate") var onboardDate : Long,
+        @ColumnInfo(name = "country") var participantCountry : String
 )
 
 @Dao

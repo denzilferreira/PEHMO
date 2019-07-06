@@ -30,7 +30,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.506"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/personal_details" />
+        app:layout_constraintTop_toBottomOf="@+id/personal_details"
+        android:importantForAutofill="no" />
 
     <EditText
         android:id="@+id/participantId"
@@ -43,7 +44,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.506"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/participantName" />
+        app:layout_constraintTop_toBottomOf="@+id/participantName"
+        android:importantForAutofill="no" />
 
     <Button
         android:id="@+id/btnSaveParticipant"
@@ -64,6 +66,7 @@
         android:layout_width="0dp"
         android:layout_height="142dp"
         android:adjustViewBounds="true"
+        android:contentDescription="@string/app_name"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -83,19 +86,29 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.506"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/participantId" />
+        app:layout_constraintTop_toBottomOf="@+id/participantId"
+        android:importantForAutofill="no" />
 
     <TextView
-        android:id="@+id/ruuviError"
+        android:id="@+id/ruuviStatus"
         android:layout_width="332dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="4dp"
+        android:minLines="3"
         android:padding="2dp"
+        android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.506"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/participantCountry" />
+
+    <Spinner
+        android:id="@+id/participantCountry"
+        android:layout_width="332dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/participantEmail"
-        android:minLines="3"
-        android:textAppearance="@style/Base.TextAppearance.MaterialComponents.Headline6"
-    />
+        app:layout_constraintTop_toBottomOf="@+id/participantEmail" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

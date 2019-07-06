@@ -10,7 +10,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.GsonBuilder
 import fi.oulu.ubicomp.extrema.Home
-import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
+import fi.oulu.ubicomp.extrema.database.*
 import org.json.JSONObject
 
 class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
@@ -23,7 +23,42 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
         println("Sync started...")
 
-        val pendingBluetooth = db.bluetoothDao().getPendingSync(prefs.getLong("bluetooth",0))
+        val pendingParticipant: Participant
+        if (prefs.getBoolean(Home.FORCE_SYNC, false)) {
+            pendingParticipant = db.participantDao().getParticipant()
+
+            val jsonBuilder = GsonBuilder()
+            val jsonPost = jsonBuilder.create()
+            val data = JSONObject()
+                    .put("tableName", "participant")
+                    .put("deviceId", prefs.getString(Home.UUID, ""))
+                    .put("data", jsonPost.toJson(pendingParticipant))
+                    .put("timestamp", System.currentTimeMillis())
+
+            val serverRequest = object : JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
+                    Response.Listener {
+                        println("Sync OK [participant]: ${it.toString(5)}")
+                    },
+                    Response.ErrorListener {
+                        println("Error ${it.networkResponse}")
+                    }
+            ) {
+                override fun getHeaders(): MutableMap<String, String> {
+                    val params = HashMap<String, String>()
+                    params.put("Content-Type", "application/json")
+                    return params
+                }
+            }
+            requestQueue.add(serverRequest)
+        }
+
+        val pendingBluetooth: Array<Bluetooth>
+        if (prefs.getBoolean(Home.FORCE_SYNC, false)) {
+            pendingBluetooth = db.bluetoothDao().getPendingSync(0)
+        } else {
+            pendingBluetooth = db.bluetoothDao().getPendingSync(prefs.getLong("bluetooth", 0))
+        }
+
         if (pendingBluetooth.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
             val jsonPost = jsonBuilder.create()
@@ -34,18 +69,18 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("data", jsonPost.toJson(bluetoothRecord))
                         .put("timestamp", System.currentTimeMillis())
 
-                val serverRequest =object :JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
+                val serverRequest = object : JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
                             println("Sync OK [bluetooth]: ${it.toString(5)}")
-                            prefs.edit().putLong("bluetooth", pendingBluetooth.last().entryDate).apply()
+                            prefs.edit().putLong("bluetooth", bluetoothRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
                             println("Error ${it.networkResponse}")
                         }
-                ){
+                ) {
                     override fun getHeaders(): MutableMap<String, String> {
                         val params = HashMap<String, String>()
-                        params.put("Content-Type","application/json")
+                        params.put("Content-Type", "application/json")
                         return params
                     }
                 }
@@ -53,7 +88,13 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             }
         }
 
-        val pendingLocation = db.locationDao().getPendingSync(prefs.getLong("location",0))
+        val pendingLocation: Array<Location>
+        if (prefs.getBoolean(Home.FORCE_SYNC, false)) {
+            pendingLocation = db.locationDao().getPendingSync(0)
+        } else {
+            pendingLocation = db.locationDao().getPendingSync(prefs.getLong("location", 0))
+        }
+
         if (pendingLocation.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
             val jsonPost = jsonBuilder.create()
@@ -64,18 +105,18 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("data", jsonPost.toJson(locationRecord))
                         .put("timestamp", System.currentTimeMillis())
 
-                val serverRequest = object :JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
+                val serverRequest = object : JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
                             println("Sync OK [locations]: ${it.toString(5)}")
-                            prefs.edit().putLong("location", pendingLocation.last().entryDate).apply()
+                            prefs.edit().putLong("location", locationRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
                             println("Error ${it.networkResponse}")
                         }
-                ){
+                ) {
                     override fun getHeaders(): MutableMap<String, String> {
                         val params = HashMap<String, String>()
-                        params.put("Content-Type","application/json")
+                        params.put("Content-Type", "application/json")
                         return params
                     }
                 }
@@ -83,7 +124,13 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             }
         }
 
-        val pendingSurvey = db.surveyDao().getPendingSync(prefs.getLong("survey",0))
+        val pendingSurvey: Array<Survey>
+        if (prefs.getBoolean(Home.FORCE_SYNC, false)) {
+            pendingSurvey = db.surveyDao().getPendingSync(0)
+        } else {
+            pendingSurvey = db.surveyDao().getPendingSync(prefs.getLong("survey", 0))
+        }
+
         if (pendingSurvey.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
             val jsonPost = jsonBuilder.create()
@@ -94,18 +141,18 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("data", jsonPost.toJson(surveyRecord))
                         .put("timestamp", System.currentTimeMillis())
 
-                val serverRequest = object: JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
+                val serverRequest = object : JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
                             println("Sync OK [survey]: ${it.toString(5)}")
-                            prefs.edit().putLong("survey", pendingSurvey.last().entryDate).apply()
+                            prefs.edit().putLong("survey", surveyRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
                             println("Error ${it.networkResponse}")
                         }
-                ){
+                ) {
                     override fun getHeaders(): MutableMap<String, String> {
                         val params = HashMap<String, String>()
-                        params.put("Content-Type","application/json")
+                        params.put("Content-Type", "application/json")
                         return params
                     }
                 }
@@ -116,6 +163,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         db.close()
 
         println("Sync finished!")
+
+        if (prefs.getBoolean(Home.FORCE_SYNC, false)) prefs.edit().putBoolean(Home.FORCE_SYNC, false).apply()
 
         return Result.success()
     }
