@@ -49,4 +49,5 @@
     <string name="ok">OK</string>
     <string name="update_available">Press here to update PEHMO to the latest version.</string>
     <string name="update_title">Update</string>
+    <string name="country">Country</string>
 </resources>

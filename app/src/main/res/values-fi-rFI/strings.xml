@@ -50,4 +50,5 @@
     <string name="ok">OK</string>
     <string name="update_available">Päivitä PEHMO uusimpaan versioon painamalla tätä.</string>
     <string name="update_title">Päivitys</string>
+    <string name="country">Maa</string>
 </resources>

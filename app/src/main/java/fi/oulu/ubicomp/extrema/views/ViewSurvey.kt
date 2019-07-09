@@ -85,7 +85,7 @@ class ViewSurvey : AppCompatActivity() {
         }
 
         symptomFlue=flue
-        symptomWheezing.setOnCheckedChangeListener { group, checkedId ->
+        symptomFlue.setOnCheckedChangeListener { group, checkedId ->
             val radioSelected : RadioButton = group.findViewById(checkedId)
             surveyData.put("symptomFlue", group.indexOfChild(radioSelected) + 1)
         }
@@ -125,6 +125,8 @@ class ViewSurvey : AppCompatActivity() {
                         participantId = participantData?.participantId,
                         entryDate = System.currentTimeMillis(),
                         surveyData = surveyData.toString())
+
+                println("Survey data: ${surveyData.toString(5)}")
 
                 db?.surveyDao()?.insert(survey)
 
