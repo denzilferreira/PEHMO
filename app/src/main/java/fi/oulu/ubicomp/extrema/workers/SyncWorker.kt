@@ -43,10 +43,14 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println("Sync OK [participant]: $it")
+                            println("Sync OK [participant]")
                             prefs.edit().putLong("participant", participantRecord.onboardDate).apply()
                         },
                         Response.ErrorListener {
+                            if (it.networkResponse == null) {
+                                println("Sync OK [participant]")
+                                prefs.edit().putLong("participant", participantRecord.onboardDate).apply()
+                            }
                             if (it.networkResponse != null)
                                 println("Error ${it.networkResponse.statusCode}")
                         }
@@ -59,6 +63,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 }
                 requestQueue.add(serverRequest)
             }
+        } else {
+            println("Nothing to sync [participant]")
         }
 
         val pendingBluetooth: Array<Bluetooth>
@@ -80,10 +86,14 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println("Sync OK [bluetooth]: $it")
+                            println("Sync OK [bluetooth]")
                             prefs.edit().putLong("bluetooth", bluetoothRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
+                            if (it.networkResponse == null) {
+                                println("Sync OK [bluetooth]")
+                                prefs.edit().putLong("bluetooth", bluetoothRecord.entryDate).apply()
+                            }
                             if (it.networkResponse != null)
                                 println("Error ${it.networkResponse.statusCode}")
                         }
@@ -96,6 +106,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 }
                 requestQueue.add(serverRequest)
             }
+        } else {
+            println("Nothing to sync [bluetooth]")
         }
 
         val pendingLocation: Array<Location>
@@ -117,10 +129,14 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println("Sync OK [locations]: $it")
+                            println("Sync OK [locations]")
                             prefs.edit().putLong("location", locationRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
+                            if (it.networkResponse == null) {
+                                println("Sync OK [locations]")
+                                prefs.edit().putLong("location", locationRecord.entryDate).apply()
+                            }
                             if (it.networkResponse != null)
                                 println("Error ${it.networkResponse.statusCode}")
                         }
@@ -133,6 +149,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 }
                 requestQueue.add(serverRequest)
             }
+        } else {
+            println("Nothing to sync [locations]")
         }
 
         val pendingSurvey: Array<Survey>
@@ -154,10 +172,14 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println("Sync OK [survey]: $it")
+                            println("Sync OK [survey]")
                             prefs.edit().putLong("survey", surveyRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
+                            if (it.networkResponse == null) {
+                                println("Sync OK [survey]")
+                                prefs.edit().putLong("survey", surveyRecord.entryDate).apply()
+                            }
                             if (it.networkResponse != null)
                                 println("Error ${it.networkResponse.statusCode}")
                         }
@@ -170,6 +192,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 }
                 requestQueue.add(serverRequest)
             }
+        } else {
+            println("Nothing to sync [survey]")
         }
 
         db.close()
