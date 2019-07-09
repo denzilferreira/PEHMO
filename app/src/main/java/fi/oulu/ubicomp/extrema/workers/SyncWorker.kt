@@ -23,33 +23,42 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
         println("Sync started...")
 
-        val pendingParticipant: Participant
+        val pendingParticipant: Array<Participant>
         if (prefs.getBoolean(Home.FORCE_SYNC, false)) {
-            pendingParticipant = db.participantDao().getParticipant()
+            pendingParticipant = db.participantDao().getPendingSync(0)
+        } else {
+            pendingParticipant = db.participantDao().getPendingSync(prefs.getLong("participant", 0))
+        }
 
+        if (pendingParticipant.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
             val jsonPost = jsonBuilder.create()
-            val data = JSONObject()
-                    .put("tableName", "participant")
-                    .put("deviceId", prefs.getString(Home.UUID, ""))
-                    .put("data", jsonPost.toJson(pendingParticipant))
-                    .put("timestamp", System.currentTimeMillis())
 
-            val serverRequest = object : JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
-                    Response.Listener {
-                        println("Sync OK [participant]: ${it.toString(5)}")
-                    },
-                    Response.ErrorListener {
-                        println("Error ${it.networkResponse}")
+            for (participantRecord in pendingParticipant) {
+                val data = JSONObject()
+                        .put("tableName", "participant")
+                        .put("deviceId", prefs.getString(Home.UUID, ""))
+                        .put("data", jsonPost.toJson(participantRecord))
+                        .put("timestamp", System.currentTimeMillis())
+
+                val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
+                        Response.Listener {
+                            println("Sync OK [participant]: $it")
+                            prefs.edit().putLong("participant", participantRecord.onboardDate).apply()
+                        },
+                        Response.ErrorListener {
+                            if (it.networkResponse != null)
+                                println("Error ${it.networkResponse.statusCode}")
+                        }
+                ) {
+                    override fun getHeaders(): MutableMap<String, String> {
+                        val params = HashMap<String, String>()
+                        params.put("Content-Type", "application/json")
+                        return params
                     }
-            ) {
-                override fun getHeaders(): MutableMap<String, String> {
-                    val params = HashMap<String, String>()
-                    params.put("Content-Type", "application/json")
-                    return params
                 }
+                requestQueue.add(serverRequest)
             }
-            requestQueue.add(serverRequest)
         }
 
         val pendingBluetooth: Array<Bluetooth>
@@ -69,13 +78,14 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("data", jsonPost.toJson(bluetoothRecord))
                         .put("timestamp", System.currentTimeMillis())
 
-                val serverRequest = object : JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
+                val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println("Sync OK [bluetooth]: ${it.toString(5)}")
+                            println("Sync OK [bluetooth]: $it")
                             prefs.edit().putLong("bluetooth", bluetoothRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
-                            println("Error ${it.networkResponse}")
+                            if (it.networkResponse != null)
+                                println("Error ${it.networkResponse.statusCode}")
                         }
                 ) {
                     override fun getHeaders(): MutableMap<String, String> {
@@ -105,13 +115,14 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("data", jsonPost.toJson(locationRecord))
                         .put("timestamp", System.currentTimeMillis())
 
-                val serverRequest = object : JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
+                val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println("Sync OK [locations]: ${it.toString(5)}")
+                            println("Sync OK [locations]: $it")
                             prefs.edit().putLong("location", locationRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
-                            println("Error ${it.networkResponse}")
+                            if (it.networkResponse != null)
+                                println("Error ${it.networkResponse.statusCode}")
                         }
                 ) {
                     override fun getHeaders(): MutableMap<String, String> {
@@ -141,13 +152,14 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("data", jsonPost.toJson(surveyRecord))
                         .put("timestamp", System.currentTimeMillis())
 
-                val serverRequest = object : JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
+                val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println("Sync OK [survey]: ${it.toString(5)}")
+                            println("Sync OK [survey]: $it")
                             prefs.edit().putLong("survey", surveyRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
-                            println("Error ${it.networkResponse}")
+                            if (it.networkResponse != null)
+                                println("Error ${it.networkResponse.statusCode}")
                         }
                 ) {
                     override fun getHeaders(): MutableMap<String, String> {

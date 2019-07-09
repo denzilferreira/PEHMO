@@ -153,10 +153,11 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
                     val serverRequest = JsonObjectRequest(Request.Method.POST, STUDY_URL, data,
                             Response.Listener {
-                                println(it.toString(5))
+                                println("OK $it")
                             },
                             Response.ErrorListener {
-                                println(it.toString())
+                                if (it.networkResponse != null)
+                                    println("Error ${it.networkResponse.statusCode}")
                             }
                     )
                     requestQueue.add(serverRequest)

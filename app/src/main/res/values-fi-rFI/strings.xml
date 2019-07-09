@@ -26,7 +26,7 @@
     <string name="rate_not_at_all">Ei lainkaan</string>
     <string name="rate_mild">Lievä</string>
     <string name="rate_fourplus">Neljä kertaa tai useammin</string>
-    <string name="rate_twothree">2-3 kertaa</string>
+    <string name="rate_twothree">2–3 kertaa</string>
     <string name="rate_once">Kerran</string>
     <string name="survey_notification_title">PEHMO</string>
     <string name="survey_notification_text">Napauta tätä vastatataksesi päivittäisiin oireisiin!</string>
@@ -51,4 +51,5 @@
     <string name="update_available">Päivitä PEHMO uusimpaan versioon painamalla tätä.</string>
     <string name="update_title">Päivitys</string>
     <string name="country">Maa</string>
+    <string name="offline">Yhdistä päivitykseen</string>
 </resources>
