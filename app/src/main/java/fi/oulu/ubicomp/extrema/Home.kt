@@ -1,6 +1,8 @@
 package fi.oulu.ubicomp.extrema
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -8,17 +10,17 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.Message
+import android.os.*
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Adapter
 import android.widget.ArrayAdapter
 import android.widget.SpinnerAdapter
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
 import androidx.room.migration.Migration
@@ -34,12 +36,14 @@ import com.android.volley.toolbox.Volley
 import com.google.gson.GsonBuilder
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.database.Participant
+import fi.oulu.ubicomp.extrema.views.ViewAccount
 import fi.oulu.ubicomp.extrema.views.ViewSurvey
 import fi.oulu.ubicomp.extrema.workers.*
 import kotlinx.android.synthetic.main.activity_account.*
 import org.altbeacon.beacon.*
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
 import org.json.JSONObject
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -105,12 +109,15 @@ class Home : AppCompatActivity(), BeaconConsumer {
             if (participantName.text.isBlank() or participantId.text.isBlank() or participantEmail.text.isBlank()) {
                 if (participantName.text.isBlank()) {
                     participantName.backgroundColor = Color.RED
+                    participantName.hint = "?"
                 }
                 if (participantId.text.isBlank()) {
                     participantId.backgroundColor = Color.RED
+                    participantId.hint = "?"
                 }
                 if (participantEmail.text.isBlank()) {
                     participantEmail.backgroundColor = Color.RED
+                    participantEmail.hint = "?"
                 }
             } else {
                 val participant = try {
@@ -136,31 +143,8 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 doAsync {
                     db?.participantDao()?.insert(participant)
 
-                    Log.d(TAG, participant.toString())
-
-                    participantData = db?.participantDao()?.getParticipant()
-
-                    val jsonBuilder = GsonBuilder()
-                    val jsonPost = jsonBuilder.create()
-
-                    val requestQueue = Volley.newRequestQueue(applicationContext)
-
-                    val data = JSONObject()
-                            .put("tableName", "participant")
-                            .put("deviceId", prefs.getString(UUID, ""))
-                            .put("data", jsonPost.toJson(participantData))
-                            .put("timestamp", System.currentTimeMillis())
-
-                    val serverRequest = JsonObjectRequest(Request.Method.POST, STUDY_URL, data,
-                            Response.Listener {
-                                println("OK $it")
-                            },
-                            Response.ErrorListener {
-                                if (it.networkResponse != null)
-                                    println("Error ${it.networkResponse.statusCode}")
-                            }
-                    )
-                    requestQueue.add(serverRequest)
+                    val sync = OneTimeWorkRequest.Builder(SyncWorker::class.java).build()
+                    WorkManager.getInstance(applicationContext).enqueue(sync)
 
                     finish()
 
@@ -181,8 +165,9 @@ class Home : AppCompatActivity(), BeaconConsumer {
         )
 
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
+                || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+        ) {
             if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                 if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
                         || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
@@ -203,7 +188,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     setSampling()
                 } else {
                     if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-
                         val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
                         if (bluetoothAdapter?.isEnabled == false) {
                             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
@@ -241,6 +225,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
     override fun onBeaconServiceConnect() {
         if (!beaconManager.rangingNotifiers.contains(rangeNotifier))
             beaconManager.addRangeNotifier(rangeNotifier)
+
         beaconManager.startRangingBeaconsInRegion(region)
     }
 
@@ -279,6 +264,31 @@ class Home : AppCompatActivity(), BeaconConsumer {
         if (grantResults.contains(PackageManager.PERMISSION_DENIED)) {
             ActivityCompat.requestPermissions(this, permissions, EXTREMA_PERMISSIONS)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.sync, menu)
+        menu?.removeItem(R.id.menu_account)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.menu_account -> {
+                startActivity(Intent(applicationContext, ViewAccount::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                return true
+            }
+            R.id.menu_sync -> {
+                val prefs = getSharedPreferences(EXTREMA_PREFS, 0)
+                prefs.edit().putBoolean(FORCE_SYNC, true).apply()
+
+                val sync = OneTimeWorkRequest.Builder(SyncWorker::class.java).build()
+                WorkManager.getInstance(applicationContext).enqueue(sync)
+                toast(getString(R.string.sync))
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     class RuuviRangeNotifier : RangeNotifier {
