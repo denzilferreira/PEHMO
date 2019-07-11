@@ -18,9 +18,9 @@ interface ParticipantDao {
     @Query("SELECT * FROM participant ORDER BY uid DESC LIMIT 1")
     fun getParticipant(): Participant
 
-    @Transaction @Insert
-    fun insert(participant: Participant)
-
     @Query("SELECT * FROM participant WHERE onboardDate > :lastSync")
     fun getPendingSync(lastSync : Long) : Array<Participant>
+
+    @Transaction @Insert
+    fun insert(participant: Participant)
 }

@@ -109,15 +109,12 @@ class Home : AppCompatActivity(), BeaconConsumer {
             if (participantName.text.isBlank() or participantId.text.isBlank() or participantEmail.text.isBlank()) {
                 if (participantName.text.isBlank()) {
                     participantName.backgroundColor = Color.RED
-                    participantName.hint = "?"
                 }
                 if (participantId.text.isBlank()) {
                     participantId.backgroundColor = Color.RED
-                    participantId.hint = "?"
                 }
                 if (participantEmail.text.isBlank()) {
                     participantEmail.backgroundColor = Color.RED
-                    participantEmail.hint = "?"
                 }
             } else {
                 val participant = try {
@@ -145,12 +142,12 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
                     val sync = OneTimeWorkRequest.Builder(SyncWorker::class.java).build()
                     WorkManager.getInstance(applicationContext).enqueue(sync)
-
-                    finish()
-
-                    startActivity(Intent(applicationContext, ViewSurvey::class.java))
-                    setSampling()
                 }
+
+                finish()
+
+                startActivity(Intent(applicationContext, ViewSurvey::class.java))
+                setSampling()
             }
         }
     }
@@ -244,9 +241,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
         val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES).build() //Set data sync to server every 15 minutes
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SYNC_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, dataSync)
-
-        //val updateCheck = PeriodicWorkRequestBuilder<UpdateWorker>(60, TimeUnit.MINUTES).build() //Check if there are any updates to the app every hour
-        //WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("UPDATE_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, updateCheck)
     }
 
     private fun getCountries(): SpinnerAdapter {
@@ -285,6 +279,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 val sync = OneTimeWorkRequest.Builder(SyncWorker::class.java).build()
                 WorkManager.getInstance(applicationContext).enqueue(sync)
                 toast(getString(R.string.sync))
+
                 return true
             }
         }
