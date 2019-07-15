@@ -2,6 +2,7 @@ package fi.oulu.ubicomp.extrema.workers
 
 import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -19,25 +20,32 @@ import org.jetbrains.anko.doAsync
 
 class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams), LocationListener {
 
+    private lateinit var db : ExtremaDatabase
+    private lateinit var participantData: Participant
+    private lateinit var locationManager: LocationManager
+    private lateinit var latestLocation: Location
+
     override fun onLocationChanged(location: Location?) {
+        if (location == null) return
+
         latestLocation = location
-        if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PermissionChecker.PERMISSION_GRANTED) {
-            val satelliteCount = latestLocation?.extras?.getInt("satellites")
+        if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            val satelliteCount = latestLocation.extras?.getInt("satellites")
             val locationData = fi.oulu.ubicomp.extrema.database.Location(
                     null,
                     entryDate = System.currentTimeMillis(),
-                    participantId = participantData?.participantId,
-                    latitude = latestLocation?.latitude,
-                    longitude = latestLocation?.longitude,
-                    accuracy = latestLocation?.accuracy,
-                    speed = latestLocation?.speed,
-                    source = latestLocation?.provider,
+                    participantId = participantData.participantId,
+                    latitude = latestLocation.latitude,
+                    longitude = latestLocation.longitude,
+                    accuracy = latestLocation.accuracy,
+                    speed = latestLocation.speed,
+                    source = latestLocation.provider,
                     satellites = satelliteCount,
                     isIndoors = (satelliteCount == 0)
             )
 
             doAsync {
-                db?.locationDao()?.insert(locationData)
+                db.locationDao().insert(locationData)
                 Log.d(Home.TAG, locationData.toString())
             }
         }
@@ -47,15 +55,10 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
     override fun onProviderEnabled(provider: String?) {}
     override fun onProviderDisabled(provider: String?) {}
 
-    var db: ExtremaDatabase? = null
-    var participantData: Participant? = null
-    lateinit var locationManager: LocationManager
-    var latestLocation: Location? = null
-
     override fun doWork(): Result {
-        if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PermissionChecker.PERMISSION_GRANTED) {
+        if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
-            participantData = db?.participantDao()?.getParticipant()
+            participantData = db.participantDao().getParticipant()
 
             locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -71,6 +74,6 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
 
     override fun onStopped() {
         super.onStopped()
-        db?.close()
+        db.close()
     }
 }

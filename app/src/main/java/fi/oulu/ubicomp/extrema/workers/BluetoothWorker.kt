@@ -23,17 +23,17 @@ import org.jetbrains.anko.doAsync
 
 class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
-    lateinit var bluetoothAdapter : BluetoothAdapter
-    lateinit var bleHandler : Handler
-    lateinit var scanSettings : ScanSettings
+    private lateinit var bluetoothAdapter : BluetoothAdapter
+    private lateinit var bleHandler : Handler
+    private lateinit var scanSettings : ScanSettings
 
-    var db: ExtremaDatabase? = null
-    var participantData: Participant? = null
+    private lateinit var db: ExtremaDatabase
+    private lateinit var participantData: Participant
 
     override fun doWork(): Result {
 
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
-        participantData = db?.participantDao()?.getParticipant()
+        participantData = db.participantDao().getParticipant()
 
         val mHandlerThread = HandlerThread("EXTREMA-BLUETOOTH")
         mHandlerThread.start()
@@ -76,10 +76,10 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
             super.onScanResult(callbackType, result)
 
             val btDevice : BluetoothDevice = result!!.device
-            if ( ! btDevice.address.equals(participantData?.ruuviTag, ignoreCase = true)) return
+            if ( ! btDevice.address.equals(participantData.ruuviTag, ignoreCase = true)) return
 
             val bluetoothData = Bluetooth(null,
-                    participantId = participantData?.participantId,
+                    participantId = participantData.participantId,
                     entryDate = System.currentTimeMillis(),
                     macAddress = btDevice.address,
                     btName = btDevice.name,
@@ -87,7 +87,7 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
             )
 
             doAsync {
-                db?.bluetoothDao()?.insert(bluetoothData)
+                db.bluetoothDao().insert(bluetoothData)
                 Log.d(Home.TAG, bluetoothData.toString())
             }
         }
@@ -95,6 +95,6 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
 
     override fun onStopped() {
         super.onStopped()
-        db?.close()
+        db.close()
     }
 }

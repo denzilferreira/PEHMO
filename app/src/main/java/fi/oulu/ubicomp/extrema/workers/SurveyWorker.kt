@@ -18,6 +18,8 @@ import java.util.*
 
 class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
+    private lateinit var db : ExtremaDatabase
+
     override fun doWork(): Result {
 
         if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) != 21) return Result.success()
@@ -28,7 +30,7 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
         today.set(Calendar.SECOND, 0)
         today.set(Calendar.MILLISECOND, 0)
 
-        val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
         val surveysToday = db.surveyDao().getToday(today.timeInMillis)
         if (surveysToday.isNotEmpty()) return Result.success()
 
@@ -60,5 +62,10 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
         notificationManager.notify(Home.EXTREMA_PERMISSIONS, builder.build())
 
         return Result.success()
+    }
+
+    override fun onStopped() {
+        super.onStopped()
+        db.close()
     }
 }

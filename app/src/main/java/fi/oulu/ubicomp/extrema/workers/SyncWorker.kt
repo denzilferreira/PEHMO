@@ -14,9 +14,12 @@ import org.json.JSONObject
 
 class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
+    private lateinit var db : ExtremaDatabase
+
     override fun doWork(): Result {
         val prefs = applicationContext.getSharedPreferences(Home.EXTREMA_PREFS, 0)
-        val db: ExtremaDatabase = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+
+        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
 
         val requestQueue = Volley.newRequestQueue(applicationContext)
 
@@ -195,12 +198,15 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             println("Nothing to sync [survey]")
         }
 
-        db.close()
-
         println("Sync finished!")
 
         if (prefs.getBoolean(Home.FORCE_SYNC, false)) prefs.edit().putBoolean(Home.FORCE_SYNC, false).apply()
 
         return Result.success()
+    }
+
+    override fun onStopped() {
+        super.onStopped()
+        db.close()
     }
 }
