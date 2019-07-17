@@ -131,7 +131,7 @@ class ViewSurvey : AppCompatActivity() {
                 db?.surveyDao()?.insert(survey)
 
                 uiThread {
-                    toast(getString(R.string.thanks))
+                    toast(getString(R.string.thanks)).show()
                 }
             }
 

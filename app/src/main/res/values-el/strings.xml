@@ -51,4 +51,5 @@
     <string name="update_title">ενημέρωση</string>
     <string name="country">Χώρα</string>
     <string name="offline">Συνδεθείτε για ενημέρωση</string>
+    <string name="participant_created">Το προφίλ δημιουργήθηκε!</string>
 </resources>

@@ -51,4 +51,5 @@
     <string name="update_title">Update</string>
     <string name="country">Country</string>
     <string name="offline">Connect to Internet to update your profile</string>
+    <string name="participant_created">Profile created!</string>
 </resources>

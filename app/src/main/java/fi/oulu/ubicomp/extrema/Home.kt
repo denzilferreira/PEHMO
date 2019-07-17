@@ -1,26 +1,17 @@
 package fi.oulu.ubicomp.extrema
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.bluetooth.BluetoothAdapter
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.os.*
-import android.util.Log
+import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Adapter
 import android.widget.ArrayAdapter
 import android.widget.SpinnerAdapter
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
 import androidx.room.migration.Migration
@@ -29,22 +20,20 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
-import com.google.gson.GsonBuilder
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.database.Participant
 import fi.oulu.ubicomp.extrema.views.ViewAccount
 import fi.oulu.ubicomp.extrema.views.ViewSurvey
-import fi.oulu.ubicomp.extrema.workers.*
+import fi.oulu.ubicomp.extrema.workers.BluetoothWorker
+import fi.oulu.ubicomp.extrema.workers.LocationWorker
+import fi.oulu.ubicomp.extrema.workers.SurveyWorker
+import fi.oulu.ubicomp.extrema.workers.SyncWorker
 import kotlinx.android.synthetic.main.activity_account.*
 import org.altbeacon.beacon.*
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
-import org.json.JSONObject
+import org.jetbrains.anko.uiThread
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
@@ -99,10 +88,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 .addMigrations(MIGRATION_1_2)
                 .build()
 
-        beaconConsumer = this
-        beaconManager = BeaconManager.getInstanceForApplication(applicationContext)
-        rangeNotifier = RuuviRangeNotifier()
-
         participantCountry.adapter = getCountries()
 
         btnSaveParticipant.setOnClickListener {
@@ -139,15 +124,20 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
                 doAsync {
                     db?.participantDao()?.insert(participant)
+                    db?.close()
 
                     val sync = OneTimeWorkRequest.Builder(SyncWorker::class.java).build()
                     WorkManager.getInstance(applicationContext).enqueue(sync)
+
+                    uiThread {
+                        toast(getString(R.string.participant_created) + " " + getString(R.string.welcome) + " ${participant.participantName}!").show()
+                    }
+
+                    finish()
+
+                    setSampling()
+                    startActivity(Intent(applicationContext, ViewSurvey::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 }
-
-                finish()
-
-                startActivity(Intent(applicationContext, ViewSurvey::class.java))
-                setSampling()
             }
         }
     }
@@ -155,36 +145,41 @@ class Home : AppCompatActivity(), BeaconConsumer {
     override fun onResume() {
         super.onResume()
 
-        var permissions = arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
+        val permissions: MutableList<String> = ArrayList()
+        permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+        permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
         ) {
             if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                beaconConsumer = this
+
                 if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
                         || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
 
-                    permissions = permissions.plus(Manifest.permission.BLUETOOTH)
-                    permissions = permissions.plus(Manifest.permission.BLUETOOTH_ADMIN)
+                    permissions.add(Manifest.permission.BLUETOOTH)
+                    permissions.add(Manifest.permission.BLUETOOTH_ADMIN)
                 }
             }
 
-            ActivityCompat.requestPermissions(this, permissions, EXTREMA_PERMISSIONS)
+            ActivityCompat.requestPermissions(this, permissions.toTypedArray(), EXTREMA_PERMISSIONS)
 
         } else {
             doAsync {
                 participantData = db?.participantDao()?.getParticipant()
                 if (participantData != null) {
                     finish()
-                    startActivity(Intent(applicationContext, ViewSurvey::class.java))
                     setSampling()
+                    startActivity(Intent(applicationContext, ViewSurvey::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 } else {
                     if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+
+                        beaconManager = BeaconManager.getInstanceForApplication(applicationContext)
+                        rangeNotifier = RuuviRangeNotifier()
+
                         val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
                         if (bluetoothAdapter?.isEnabled == false) {
                             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
@@ -205,18 +200,13 @@ class Home : AppCompatActivity(), BeaconConsumer {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        db?.close()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-
-        beaconManager?.removeRangeNotifier(rangeNotifier)
-        beaconManager?.stopRangingBeaconsInRegion(region)
-        beaconManager?.unbind(beaconConsumer)
-        db?.close()
+        if (::beaconManager.isInitialized) {
+            beaconManager?.removeRangeNotifier(rangeNotifier)
+            beaconManager?.stopRangingBeaconsInRegion(region)
+            beaconManager?.unbind(beaconConsumer)
+        }
     }
 
     override fun onBeaconServiceConnect() {
@@ -267,7 +257,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.menu_account -> {
                 startActivity(Intent(applicationContext, ViewAccount::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 return true
