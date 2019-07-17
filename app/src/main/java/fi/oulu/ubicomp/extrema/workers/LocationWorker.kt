@@ -57,7 +57,10 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
 
     override fun doWork(): Result {
         if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+            db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                    .addMigrations(Home.MIGRATION_1_2)
+                    .build()
+
             participantData = db.participantDao().getParticipant()
 
             locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager

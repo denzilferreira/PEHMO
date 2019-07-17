@@ -30,7 +30,10 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
         today.set(Calendar.SECOND, 0)
         today.set(Calendar.MILLISECOND, 0)
 
-        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                .addMigrations(Home.MIGRATION_1_2)
+                .build()
+
         val surveysToday = db.surveyDao().getToday(today.timeInMillis)
         if (surveysToday.isNotEmpty()) return Result.success()
 

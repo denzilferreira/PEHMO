@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.SpinnerAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
 import com.android.volley.Request
@@ -17,7 +16,6 @@ import fi.oulu.ubicomp.extrema.R
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import kotlinx.android.synthetic.main.activity_account.*
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
 import java.util.*
@@ -36,9 +34,9 @@ class ViewAccount : AppCompatActivity() {
         super.onResume()
 
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-        .addMigrations(Home.MIGRATION_1_2)
-        .build()
-        
+                .addMigrations(Home.MIGRATION_1_2)
+                .build()
+
         val prefs = getSharedPreferences(Home.EXTREMA_PREFS, 0)
 
         doAsync {

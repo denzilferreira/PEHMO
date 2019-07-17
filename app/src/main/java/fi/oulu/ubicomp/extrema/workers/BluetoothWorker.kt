@@ -32,7 +32,10 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
 
     override fun doWork(): Result {
 
-        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                .addMigrations(Home.MIGRATION_1_2)
+                .build()
+
         participantData = db.participantDao().getParticipant()
 
         val mHandlerThread = HandlerThread("EXTREMA-BLUETOOTH")
