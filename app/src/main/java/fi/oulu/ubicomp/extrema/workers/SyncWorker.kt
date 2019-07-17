@@ -19,7 +19,9 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
     override fun doWork(): Result {
         val prefs = applicationContext.getSharedPreferences(Home.EXTREMA_PREFS, 0)
 
-        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+        .addMigrations(Home.MIGRATION_1_2)
+        .build()
 
         val requestQueue = Volley.newRequestQueue(applicationContext)
 
