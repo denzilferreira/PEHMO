@@ -35,7 +35,10 @@ class ViewAccount : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+        .addMigrations(Home.MIGRATION_1_2)
+        .build()
+        
         val prefs = getSharedPreferences(Home.EXTREMA_PREFS, 0)
 
         doAsync {
