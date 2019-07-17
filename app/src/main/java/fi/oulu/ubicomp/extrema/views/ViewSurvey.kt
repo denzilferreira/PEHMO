@@ -48,7 +48,10 @@ class ViewSurvey : AppCompatActivity() {
         setContentView(R.layout.activity_view_survey)
 
         doAsync {
-            db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema").build()
+            db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+            .addMigrations(Home.MIGRATION_1_2)
+            .build()
+            
             participantData = db?.participantDao()?.getParticipant()
 
             uiThread {
