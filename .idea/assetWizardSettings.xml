@@ -29,17 +29,6 @@
                                           </PersistentState>
                                         </value>
                                       </entry>
-                                      <entry key="clipartAsset">
-                                        <value>
-                                          <PersistentState>
-                                            <option name="values">
-                                              <map>
-                                                <entry key="url" value="jar:file:/home/ferreira/Applications/android-studio-ide-183.5522156-linux/android-studio/plugins/android/lib/android.jar!/images/material_design_icons/action/ic_update_black_24dp.xml" />
-                                              </map>
-                                            </option>
-                                          </PersistentState>
-                                        </value>
-                                      </entry>
                                     </map>
                                   </option>
                                   <option name="values">
@@ -131,7 +120,18 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="jar:file:/home/ferreira/Applications/android-studio-ide-183.5522156-linux/android-studio/plugins/android/lib/android.jar!/images/material_design_icons/action/ic_update_black_24dp.xml" />
+                                                <entry key="url" value="jar:file:/home/ferreira/Applications/ideaIC-2019.2/idea-IC-192.5728.98/plugins/android/lib/android.jar!/images/material_design_icons/file/ic_cloud_done_black_24dp.xml" />
+                                              </map>
+                                            </option>
+                                          </PersistentState>
+                                        </value>
+                                      </entry>
+                                      <entry key="image">
+                                        <value>
+                                          <PersistentState>
+                                            <option name="values">
+                                              <map>
+                                                <entry key="color" value="000000" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -141,7 +141,7 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="outputName" value="ic_stat_extrema_update" />
+                                      <entry key="outputName" value="ic_stat_pehmo_foreground" />
                                     </map>
                                   </option>
                                 </PersistentState>

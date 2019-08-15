@@ -16,17 +16,13 @@ import androidx.core.content.ContextCompat
 import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequest
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.database.Participant
+import fi.oulu.ubicomp.extrema.services.Pehmo
 import fi.oulu.ubicomp.extrema.views.ViewAccount
 import fi.oulu.ubicomp.extrema.views.ViewSurvey
-import fi.oulu.ubicomp.extrema.workers.BluetoothWorker
-import fi.oulu.ubicomp.extrema.workers.LocationWorker
-import fi.oulu.ubicomp.extrema.workers.SurveyWorker
 import fi.oulu.ubicomp.extrema.workers.SyncWorker
 import kotlinx.android.synthetic.main.activity_account.*
 import org.altbeacon.beacon.*
@@ -35,7 +31,6 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
 class Home : AppCompatActivity(), BeaconConsumer {
@@ -56,6 +51,8 @@ class Home : AppCompatActivity(), BeaconConsumer {
         lateinit var ruuvi: Beacon
         lateinit var beaconConsumer: BeaconConsumer
 
+        var participantData: Participant? = null
+
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE participant ADD COLUMN country TEXT")
@@ -67,7 +64,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
     lateinit var rangeNotifier: RuuviRangeNotifier
 
     var db: ExtremaDatabase? = null
-    var participantData: Participant? = null
     val region: Region = Region("fi.oulu.ubicomp.extrema", null, null, null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,7 +131,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
                     finish()
 
-                    setSampling()
+                    startService(Intent(applicationContext, Pehmo::class.java))
                     startActivity(Intent(applicationContext, ViewSurvey::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 }
             }
@@ -172,7 +168,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 participantData = db?.participantDao()?.getParticipant()
                 if (participantData != null) {
                     finish()
-                    setSampling()
+                    startService(Intent(applicationContext, Pehmo::class.java))
                     startActivity(Intent(applicationContext, ViewSurvey::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 } else {
                     if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -207,6 +203,8 @@ class Home : AppCompatActivity(), BeaconConsumer {
             beaconManager?.stopRangingBeaconsInRegion(region)
             beaconManager?.unbind(beaconConsumer)
         }
+
+        startService(Intent(applicationContext, Pehmo::class.java))
     }
 
     override fun onBeaconServiceConnect() {
@@ -214,23 +212,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
             beaconManager.addRangeNotifier(rangeNotifier)
 
         beaconManager.startRangingBeaconsInRegion(region)
-    }
-
-
-    private fun setSampling() {
-        val locationTracking = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build() //Set location logging every 15 minutes
-        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("LOCATION_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, locationTracking)
-
-        if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) && !participantData?.ruuviTag.isNullOrBlank()) { //Set bluetooth scanning if available or makes sense
-            val bluetoothTracking = PeriodicWorkRequestBuilder<BluetoothWorker>(15, TimeUnit.MINUTES).build()
-            WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, bluetoothTracking)
-        }
-
-        val surveyReminder = PeriodicWorkRequestBuilder<SurveyWorker>(15, TimeUnit.MINUTES).build() //check every 30 minutes if it's a good time to show the survey
-        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, surveyReminder)
-
-        val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES).build() //Set data sync to server every 15 minutes
-        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SYNC_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, dataSync)
     }
 
     private fun getCountries(): SpinnerAdapter {

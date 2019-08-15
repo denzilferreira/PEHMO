@@ -52,4 +52,5 @@
     <string name="country">Country</string>
     <string name="offline">Connect to Internet to update your profile</string>
     <string name="participant_created">Profile created!</string>
+    <string name="pehmo_foreground">Thank you for your participation.</string>
 </resources>

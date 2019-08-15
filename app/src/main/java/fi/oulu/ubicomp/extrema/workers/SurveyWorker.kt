@@ -35,7 +35,13 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
                 .build()
 
         val surveysToday = db.surveyDao().getToday(today.timeInMillis)
-        if (surveysToday.isNotEmpty()) return Result.success()
+        if (surveysToday.isNotEmpty()) {
+            for(surveyEntry in surveysToday) {
+                val calendar = Calendar.getInstance()
+                calendar.timeInMillis = surveyEntry.entryDate
+                if (calendar.get(Calendar.HOUR_OF_DAY) == 21) return Result.success()
+            }
+        }
 
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

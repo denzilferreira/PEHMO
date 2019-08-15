@@ -62,7 +62,6 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
                     .build()
 
             participantData = db.participantDao().getParticipant()
-
             locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
             val mHandlerThread = HandlerThread("EXTREMA-LOCATION")
@@ -70,6 +69,7 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
 
             locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, mHandlerThread.looper)
             locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, mHandlerThread.looper)
+            locationManager.requestSingleUpdate(LocationManager.PASSIVE_PROVIDER, this, mHandlerThread.looper)
         }
 
         return Result.success()
