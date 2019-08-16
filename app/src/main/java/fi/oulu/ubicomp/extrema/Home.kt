@@ -55,7 +55,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE participant ADD COLUMN country TEXT")
+                database.execSQL("ALTER TABLE participant ADD COLUMN country TEXT NOT NULL DEFAULT ''")
             }
         }
     }
