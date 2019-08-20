@@ -35,6 +35,8 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
                 .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                 .build()
 
+        participantData = db.participantDao().getParticipant()
+
         val mHandlerThread = HandlerThread("EXTREMA-BLUETOOTH")
         mHandlerThread.start()
 
@@ -74,8 +76,6 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
     val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             super.onScanResult(callbackType, result)
-
-            participantData = db.participantDao().getParticipant()
 
             val btDevice: BluetoothDevice = result!!.device
             if (!btDevice.address.equals(participantData.ruuviTag, ignoreCase = true)) return
