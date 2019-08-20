@@ -54,4 +54,5 @@
     <string name="offline">Yhdistä päivitykseen</string>
     <string name="participant_created">Profiili on luotu!</string>
     <string name="pehmo_foreground">Kiitos osallistumisesta.</string>
+    <string name="battery_ignore">Anna PEHMO: n ajaa.</string>
 </resources>

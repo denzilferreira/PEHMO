@@ -1,17 +1,25 @@
 package fi.oulu.ubicomp.extrema
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.bluetooth.BluetoothAdapter
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.SpinnerAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
 import androidx.room.migration.Migration
@@ -141,6 +149,8 @@ class Home : AppCompatActivity(), BeaconConsumer {
     override fun onResume() {
         super.onResume()
 
+        checkDoze(applicationContext)
+
         val permissions: MutableList<String> = ArrayList()
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -194,6 +204,45 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 }
             }
         }
+    }
+
+    fun checkDoze(context: Context) : Boolean {
+        var isIgnore = true
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+            isIgnore = powerManager.isIgnoringBatteryOptimizations(context.packageName)
+        }
+
+        if (!isIgnore) {
+            val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val name = applicationContext.getString(R.string.app_name)
+                val descriptionText = applicationContext.getString(R.string.app_name)
+                val channel = NotificationChannel("EXTREMA", name, NotificationManager.IMPORTANCE_DEFAULT).apply {
+                    description = descriptionText
+                }
+                notificationManager.createNotificationChannel(channel)
+            }
+
+            val batteryIntent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val pendingBattery = PendingIntent.getActivity(applicationContext, 0, batteryIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val builder = NotificationCompat.Builder(applicationContext, "EXTREMA")
+                    .setSmallIcon(R.drawable.ic_stat_pehmo_battery)
+                    .setContentTitle(getString(R.string.app_name))
+                    .setContentText(getString(R.string.battery_ignore))
+                    .setContentIntent(pendingBattery)
+                    .setAutoCancel(true)
+                    .setOnlyAlertOnce(true)
+                    .setDefaults(NotificationCompat.DEFAULT_ALL)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+            notificationManager.notify(Home.EXTREMA_PERMISSIONS, builder.build())
+        }
+
+        return isIgnore
     }
 
     override fun onDestroy() {

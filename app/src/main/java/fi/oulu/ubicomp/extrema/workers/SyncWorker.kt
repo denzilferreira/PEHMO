@@ -28,7 +28,6 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         println("Sync started...")
 
         val pendingParticipant = db.participantDao().getPendingSync(prefs.getLong("participant", 0))
-
         if (pendingParticipant.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
             val jsonPost = jsonBuilder.create()
@@ -47,11 +46,9 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
-                                println("Sync OK [participant]: ${pendingParticipant.indexOf(participantRecord) + 1} of ${pendingParticipant.size}")
-                                prefs.edit().putLong("participant", participantRecord.onboardDate).apply()
+                                println("Response null [participant]")
+                                println("Error: ${it.message}")
                             }
-                            if (it.networkResponse != null)
-                                println("Error ${it.networkResponse.statusCode}")
                         }
                 ) {
                     override fun getHeaders(): MutableMap<String, String> {
@@ -68,8 +65,10 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
         val pendingBluetooth = db.bluetoothDao().getPendingSync(prefs.getLong("bluetooth", 0))
         if (pendingBluetooth.isNotEmpty()) {
+
             val jsonBuilder = GsonBuilder()
             val jsonPost = jsonBuilder.create()
+
             for (bluetoothRecord in pendingBluetooth) {
                 val data = JSONObject()
                         .put("tableName", "bluetooth")
@@ -84,11 +83,9 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
-                                println("Sync OK [bluetooth]: ${pendingBluetooth.indexOf(bluetoothRecord) + 1} of ${pendingBluetooth.size}")
-                                prefs.edit().putLong("bluetooth", bluetoothRecord.entryDate).apply()
+                                println("Response null [bluetooth]")
+                                println("Error: ${it.message}")
                             }
-                            if (it.networkResponse != null)
-                                println("Error ${it.networkResponse.statusCode}")
                         }
                 ) {
                     override fun getHeaders(): MutableMap<String, String> {
@@ -121,11 +118,9 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
-                                println("Sync OK [location]: ${pendingLocation.indexOf(locationRecord) + 1} of ${pendingLocation.size}")
-                                prefs.edit().putLong("location", locationRecord.entryDate).apply()
+                                println("Response null [location]")
+                                println("Error: ${it.message}")
                             }
-                            if (it.networkResponse != null)
-                                println("Error ${it.networkResponse.statusCode}")
                         }
                 ) {
                     override fun getHeaders(): MutableMap<String, String> {
@@ -158,11 +153,9 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
-                                println("Sync OK [survey]: ${pendingSurvey.indexOf(surveyRecord) + 1} of ${pendingSurvey.size}")
-                                prefs.edit().putLong("survey", surveyRecord.entryDate).apply()
+                                println("Response null [survey]")
+                                println("Error: ${it.message}")
                             }
-                            if (it.networkResponse != null)
-                                println("Error ${it.networkResponse.statusCode}")
                         }
                 ) {
                     override fun getHeaders(): MutableMap<String, String> {
@@ -195,11 +188,9 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
-                                println("Sync OK [battery]: ${pendingBattery.indexOf(batteryRecord) + 1} of ${pendingBattery.size}")
-                                prefs.edit().putLong("survey", batteryRecord.entryDate).apply()
+                                println("Response null [battery]")
+                                println("Error: ${it.message}")
                             }
-                            if (it.networkResponse != null)
-                                println("Error ${it.networkResponse.statusCode}")
                         }
                 ) {
                     override fun getHeaders(): MutableMap<String, String> {
@@ -211,17 +202,14 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 requestQueue.add(serverRequest)
             }
         } else {
-            println("Nothing to sync [survey]")
+            println("Nothing to sync [battery]")
         }
-
         println("Sync finished!")
-
         return Result.success()
     }
 
     override fun onStopped() {
         super.onStopped()
-
         if (::db.isInitialized) db.close()
     }
 }
