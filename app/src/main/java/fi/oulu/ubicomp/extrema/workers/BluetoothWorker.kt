@@ -20,12 +20,11 @@ import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.database.Participant
 import org.jetbrains.anko.doAsync
 
-
 class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
-    private lateinit var bluetoothAdapter : BluetoothAdapter
-    private lateinit var bleHandler : Handler
-    private lateinit var scanSettings : ScanSettings
+    private lateinit var bluetoothAdapter: BluetoothAdapter
+    private lateinit var bleHandler: Handler
+    private lateinit var scanSettings: ScanSettings
 
     private lateinit var db: ExtremaDatabase
     private lateinit var participantData: Participant
@@ -33,7 +32,7 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
     override fun doWork(): Result {
 
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                .addMigrations(Home.MIGRATION_1_2)
+                .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                 .build()
 
         participantData = db.participantDao().getParticipant()
@@ -78,8 +77,8 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             super.onScanResult(callbackType, result)
 
-            val btDevice : BluetoothDevice = result!!.device
-            if ( ! btDevice.address.equals(participantData.ruuviTag, ignoreCase = true)) return
+            val btDevice: BluetoothDevice = result!!.device
+            if (!btDevice.address.equals(participantData.ruuviTag, ignoreCase = true)) return
 
             val bluetoothData = Bluetooth(null,
                     participantId = participantData.participantId,
@@ -98,6 +97,6 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
 
     override fun onStopped() {
         super.onStopped()
-        db.close()
+        if (::db.isInitialized) db.close()
     }
 }

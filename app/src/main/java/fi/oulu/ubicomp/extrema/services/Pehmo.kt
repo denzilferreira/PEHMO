@@ -11,15 +11,13 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.OneTimeWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import fi.oulu.ubicomp.extrema.Home.Companion.participantData
 import fi.oulu.ubicomp.extrema.R
 import fi.oulu.ubicomp.extrema.views.ViewSurvey
-import fi.oulu.ubicomp.extrema.workers.BluetoothWorker
-import fi.oulu.ubicomp.extrema.workers.LocationWorker
-import fi.oulu.ubicomp.extrema.workers.SurveyWorker
-import fi.oulu.ubicomp.extrema.workers.SyncWorker
+import fi.oulu.ubicomp.extrema.workers.*
 import java.util.concurrent.TimeUnit
 
 class Pehmo : Service() {
@@ -68,7 +66,10 @@ class Pehmo : Service() {
             WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("BLUETOOTH_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, bluetoothTracking)
         }
 
-        val surveyReminder = PeriodicWorkRequestBuilder<SurveyWorker>(15, TimeUnit.MINUTES).build() //check every 30 minutes if it's a good time to show the survey
+        val batteryMonitor = PeriodicWorkRequestBuilder<BatteryWorker>(15, TimeUnit.MINUTES).build() //check battery every 15 minutes
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("BATTERY_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, batteryMonitor)
+
+        val surveyReminder = PeriodicWorkRequestBuilder<SurveyWorker>(15, TimeUnit.MINUTES).build() //check every 15 minutes if it's a good time to show the survey
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork("SURVEY_EXTREMA", ExistingPeriodicWorkPolicy.KEEP, surveyReminder)
 
         val dataSync = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES).build() //Set data sync to server every 15 minutes

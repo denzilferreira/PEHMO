@@ -34,7 +34,7 @@ class ViewAccount : AppCompatActivity() {
         super.onResume()
 
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                .addMigrations(Home.MIGRATION_1_2)
+                .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                 .build()
 
         val prefs = getSharedPreferences(Home.EXTREMA_PREFS, 0)

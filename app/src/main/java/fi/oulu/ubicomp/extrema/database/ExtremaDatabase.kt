@@ -8,12 +8,15 @@ import androidx.room.migration.Migration
     Participant::class,
     Survey::class,
     Location::class,
-    Bluetooth::class]
-, version = 2)
+    Bluetooth::class,
+    Battery::class
+]
+, version = 3, exportSchema = true)
 
 abstract class ExtremaDatabase : RoomDatabase() {
     abstract fun participantDao(): ParticipantDao
     abstract fun surveyDao(): SurveyDao
     abstract fun locationDao() : LocationDao
     abstract fun bluetoothDao() : BluetoothDao
+    abstract fun batteryDao() : BatteryDao
 }

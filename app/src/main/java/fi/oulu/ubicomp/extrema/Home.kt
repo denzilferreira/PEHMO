@@ -41,7 +41,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
         const val EXTREMA_PERMISSIONS = 12345
         const val EXTREMA_PREFS = "fi.oulu.ubicomp.extrema.prefs"
         const val UUID = "deviceId"
-        const val FORCE_SYNC = "forceSync"
         const val STUDY_URL = "https://co2.awareframework.com:8443/insert"
 
         const val RuuviV2and4_LAYOUT = "s:0-1=feaa,m:2-2=10,p:3-3:-41,i:4-21v"
@@ -56,6 +55,11 @@ class Home : AppCompatActivity(), BeaconConsumer {
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE participant ADD COLUMN country TEXT NOT NULL DEFAULT ''")
+            }
+        }
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `battery` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT, `participantId` TEXT NOT NULL, `entryDate` INTEGER NOT NULL, `batteryPercent` REAL NOT NULL, `batteryTemperature` REAL NOT NULL, `batteryStatus` TEXT NOT NULL)")
             }
         }
     }
@@ -74,14 +78,10 @@ class Home : AppCompatActivity(), BeaconConsumer {
             prefs.edit().putString(UUID, java.util.UUID.randomUUID().toString()).apply()
         }
 
-        if (!prefs.contains(FORCE_SYNC)) {
-            prefs.edit().putBoolean(FORCE_SYNC, true).apply()
-        }
-
         setContentView(R.layout.activity_account)
 
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
 
         participantCountry.adapter = getCountries()
@@ -244,13 +244,9 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 return true
             }
             R.id.menu_sync -> {
-                val prefs = getSharedPreferences(EXTREMA_PREFS, 0)
-                prefs.edit().putBoolean(FORCE_SYNC, true).apply()
-
                 val sync = OneTimeWorkRequest.Builder(SyncWorker::class.java).build()
                 WorkManager.getInstance(applicationContext).enqueue(sync)
                 toast(getString(R.string.sync))
-
                 return true
             }
         }

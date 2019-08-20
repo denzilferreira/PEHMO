@@ -100,7 +100,7 @@ dependencies {
     implementation "com.android.volley:volley:$volley_version"
 
     //Bluetooth libraries for RuuviTag support and Beacon scanning
-    implementation 'org.altbeacon:android-beacon-library:2.14'
+    implementation 'org.altbeacon:android-beacon-library:2.16.2'
     implementation 'com.neovisionaries:nv-bluetooth:1.8'
 
     implementation 'com.koushikdutta.ion:ion:2.2.1'

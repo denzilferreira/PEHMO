@@ -50,7 +50,7 @@ class ViewSurvey : AppCompatActivity() {
 
         doAsync {
             db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                    .addMigrations(Home.MIGRATION_1_2)
+                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
             participantData = db?.participantDao()?.getParticipant()

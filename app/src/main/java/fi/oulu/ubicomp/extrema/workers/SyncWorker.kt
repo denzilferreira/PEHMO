@@ -9,30 +9,25 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.GsonBuilder
 import fi.oulu.ubicomp.extrema.Home
-import fi.oulu.ubicomp.extrema.database.*
+import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import org.json.JSONObject
 
 class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
-    private lateinit var db : ExtremaDatabase
+    private lateinit var db: ExtremaDatabase
 
     override fun doWork(): Result {
         val prefs = applicationContext.getSharedPreferences(Home.EXTREMA_PREFS, 0)
 
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-            .addMigrations(Home.MIGRATION_1_2)
-            .build()
+                .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
+                .build()
 
         val requestQueue = Volley.newRequestQueue(applicationContext)
 
         println("Sync started...")
 
-        val pendingParticipant: Array<Participant>
-        if (prefs.getBoolean(Home.FORCE_SYNC, false)) {
-            pendingParticipant = db.participantDao().getPendingSync(0)
-        } else {
-            pendingParticipant = db.participantDao().getPendingSync(prefs.getLong("participant", 0))
-        }
+        val pendingParticipant = db.participantDao().getPendingSync(prefs.getLong("participant", 0))
 
         if (pendingParticipant.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
@@ -47,12 +42,12 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println("Sync OK [participant]: ${pendingParticipant.indexOf(participantRecord)+1} of ${pendingParticipant.size}")
+                            println("Sync OK [participant]: ${pendingParticipant.indexOf(participantRecord) + 1} of ${pendingParticipant.size}")
                             prefs.edit().putLong("participant", participantRecord.onboardDate).apply()
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
-                                println("Sync OK [participant]: ${pendingParticipant.indexOf(participantRecord)+1} of ${pendingParticipant.size}")
+                                println("Sync OK [participant]: ${pendingParticipant.indexOf(participantRecord) + 1} of ${pendingParticipant.size}")
                                 prefs.edit().putLong("participant", participantRecord.onboardDate).apply()
                             }
                             if (it.networkResponse != null)
@@ -71,13 +66,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             println("Nothing to sync [participant]")
         }
 
-        val pendingBluetooth: Array<Bluetooth>
-        if (prefs.getBoolean(Home.FORCE_SYNC, false)) {
-            pendingBluetooth = db.bluetoothDao().getPendingSync(0)
-        } else {
-            pendingBluetooth = db.bluetoothDao().getPendingSync(prefs.getLong("bluetooth", 0))
-        }
-
+        val pendingBluetooth = db.bluetoothDao().getPendingSync(prefs.getLong("bluetooth", 0))
         if (pendingBluetooth.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
             val jsonPost = jsonBuilder.create()
@@ -90,12 +79,12 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println("Sync OK [bluetooth]: ${pendingBluetooth.indexOf(bluetoothRecord)+1} of ${pendingBluetooth.size}")
+                            println("Sync OK [bluetooth]: ${pendingBluetooth.indexOf(bluetoothRecord) + 1} of ${pendingBluetooth.size}")
                             prefs.edit().putLong("bluetooth", bluetoothRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
-                                println("Sync OK [bluetooth]: ${pendingBluetooth.indexOf(bluetoothRecord)+1} of ${pendingBluetooth.size}")
+                                println("Sync OK [bluetooth]: ${pendingBluetooth.indexOf(bluetoothRecord) + 1} of ${pendingBluetooth.size}")
                                 prefs.edit().putLong("bluetooth", bluetoothRecord.entryDate).apply()
                             }
                             if (it.networkResponse != null)
@@ -114,13 +103,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             println("Nothing to sync [bluetooth]")
         }
 
-        val pendingLocation: Array<Location>
-        if (prefs.getBoolean(Home.FORCE_SYNC, false)) {
-            pendingLocation = db.locationDao().getPendingSync(0)
-        } else {
-            pendingLocation = db.locationDao().getPendingSync(prefs.getLong("location", 0))
-        }
-
+        val pendingLocation = db.locationDao().getPendingSync(prefs.getLong("location", 0))
         if (pendingLocation.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
             val jsonPost = jsonBuilder.create()
@@ -133,12 +116,12 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println("Sync OK [location]: ${pendingLocation.indexOf(locationRecord)+1} of ${pendingLocation.size}")
+                            println("Sync OK [location]: ${pendingLocation.indexOf(locationRecord) + 1} of ${pendingLocation.size}")
                             prefs.edit().putLong("location", locationRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
-                                println("Sync OK [location]: ${pendingLocation.indexOf(locationRecord)+1} of ${pendingLocation.size}")
+                                println("Sync OK [location]: ${pendingLocation.indexOf(locationRecord) + 1} of ${pendingLocation.size}")
                                 prefs.edit().putLong("location", locationRecord.entryDate).apply()
                             }
                             if (it.networkResponse != null)
@@ -157,13 +140,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             println("Nothing to sync [locations]")
         }
 
-        val pendingSurvey: Array<Survey>
-        if (prefs.getBoolean(Home.FORCE_SYNC, false)) {
-            pendingSurvey = db.surveyDao().getPendingSync(0)
-        } else {
-            pendingSurvey = db.surveyDao().getPendingSync(prefs.getLong("survey", 0))
-        }
-
+        val pendingSurvey = db.surveyDao().getPendingSync(prefs.getLong("survey", 0))
         if (pendingSurvey.isNotEmpty()) {
             val jsonBuilder = GsonBuilder()
             val jsonPost = jsonBuilder.create()
@@ -176,13 +153,50 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                         Response.Listener {
-                            println("Sync OK [survey]: ${pendingSurvey.indexOf(surveyRecord)+1} of ${pendingSurvey.size}")
+                            println("Sync OK [survey]: ${pendingSurvey.indexOf(surveyRecord) + 1} of ${pendingSurvey.size}")
                             prefs.edit().putLong("survey", surveyRecord.entryDate).apply()
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
-                                println("Sync OK [survey]: ${pendingSurvey.indexOf(surveyRecord)+1} of ${pendingSurvey.size}")
+                                println("Sync OK [survey]: ${pendingSurvey.indexOf(surveyRecord) + 1} of ${pendingSurvey.size}")
                                 prefs.edit().putLong("survey", surveyRecord.entryDate).apply()
+                            }
+                            if (it.networkResponse != null)
+                                println("Error ${it.networkResponse.statusCode}")
+                        }
+                ) {
+                    override fun getHeaders(): MutableMap<String, String> {
+                        val params = HashMap<String, String>()
+                        params.put("Content-Type", "application/json")
+                        return params
+                    }
+                }
+                requestQueue.add(serverRequest)
+            }
+        } else {
+            println("Nothing to sync [survey]")
+        }
+
+        val pendingBattery = db.batteryDao().getPendingSync(prefs.getLong("battery", 0))
+        if (pendingBattery.isNotEmpty()) {
+            val jsonBuilder = GsonBuilder()
+            val jsonPost = jsonBuilder.create()
+            for (batteryRecord in pendingBattery) {
+                val data = JSONObject()
+                        .put("tableName", "battery")
+                        .put("deviceId", prefs.getString(Home.UUID, ""))
+                        .put("data", jsonPost.toJson(batteryRecord))
+                        .put("timestamp", System.currentTimeMillis())
+
+                val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
+                        Response.Listener {
+                            println("Sync OK [battery]: ${pendingBattery.indexOf(batteryRecord) + 1} of ${pendingBattery.size}")
+                            prefs.edit().putLong("battery", batteryRecord.entryDate).apply()
+                        },
+                        Response.ErrorListener {
+                            if (it.networkResponse == null) {
+                                println("Sync OK [battery]: ${pendingBattery.indexOf(batteryRecord) + 1} of ${pendingBattery.size}")
+                                prefs.edit().putLong("survey", batteryRecord.entryDate).apply()
                             }
                             if (it.networkResponse != null)
                                 println("Error ${it.networkResponse.statusCode}")
@@ -202,13 +216,12 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
         println("Sync finished!")
 
-        if (prefs.getBoolean(Home.FORCE_SYNC, false)) prefs.edit().putBoolean(Home.FORCE_SYNC, false).apply()
-
         return Result.success()
     }
 
     override fun onStopped() {
         super.onStopped()
-        db.close()
+
+        if (::db.isInitialized) db.close()
     }
 }

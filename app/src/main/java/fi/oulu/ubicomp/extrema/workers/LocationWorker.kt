@@ -9,7 +9,6 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.os.HandlerThread
 import android.util.Log
-import androidx.core.content.PermissionChecker
 import androidx.room.Room
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -20,7 +19,7 @@ import org.jetbrains.anko.doAsync
 
 class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams), LocationListener {
 
-    private lateinit var db : ExtremaDatabase
+    private lateinit var db: ExtremaDatabase
     private lateinit var participantData: Participant
     private lateinit var locationManager: LocationManager
     private lateinit var latestLocation: Location
@@ -58,7 +57,7 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
     override fun doWork(): Result {
         if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                    .addMigrations(Home.MIGRATION_1_2)
+                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
             participantData = db.participantDao().getParticipant()
@@ -77,6 +76,6 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
 
     override fun onStopped() {
         super.onStopped()
-        db.close()
+        if (::db.isInitialized) db.close()
     }
 }
