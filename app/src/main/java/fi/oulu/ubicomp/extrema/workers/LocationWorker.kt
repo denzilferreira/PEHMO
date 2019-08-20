@@ -27,18 +27,18 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
     override fun onLocationChanged(location: Location?) {
         if (location == null) return
 
-        latestLocation = location
         if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            participantData = db.participantDao().getParticipant()
             val satelliteCount = latestLocation.extras?.getInt("satellites")
             val locationData = fi.oulu.ubicomp.extrema.database.Location(
                     null,
                     entryDate = System.currentTimeMillis(),
                     participantId = participantData.participantId,
-                    latitude = latestLocation.latitude,
-                    longitude = latestLocation.longitude,
-                    accuracy = latestLocation.accuracy,
-                    speed = latestLocation.speed,
-                    source = latestLocation.provider,
+                    latitude = location.latitude,
+                    longitude = location.longitude,
+                    accuracy = location.accuracy,
+                    speed = location.speed,
+                    source = location.provider,
                     satellites = satelliteCount,
                     isIndoors = (satelliteCount == 0)
             )
@@ -60,7 +60,6 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
                     .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
-            participantData = db.participantDao().getParticipant()
             locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
             val mHandlerThread = HandlerThread("EXTREMA-LOCATION")

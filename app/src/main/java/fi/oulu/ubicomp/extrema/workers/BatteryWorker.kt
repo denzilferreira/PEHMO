@@ -67,11 +67,8 @@ class BatteryWorker(appContext: Context, workerParams: WorkerParameters) : Worke
             println(batteryNow.toString())
         }
 
-        return Result.success()
-    }
+        db.close()
 
-    override fun onStopped() {
-        super.onStopped()
-        if (::db.isInitialized) db.close()
+        return Result.success()
     }
 }

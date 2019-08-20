@@ -205,11 +205,9 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             println("Nothing to sync [battery]")
         }
         println("Sync finished!")
-        return Result.success()
-    }
 
-    override fun onStopped() {
-        super.onStopped()
-        if (::db.isInitialized) db.close()
+        db.close()
+
+        return Result.success()
     }
 }

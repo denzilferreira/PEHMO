@@ -70,11 +70,8 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
 
         notificationManager.notify(Home.EXTREMA_PERMISSIONS, builder.build())
 
-        return Result.success()
-    }
+        db.close()
 
-    override fun onStopped() {
-        super.onStopped()
-        if (::db.isInitialized) db.close()
+        return Result.success()
     }
 }
