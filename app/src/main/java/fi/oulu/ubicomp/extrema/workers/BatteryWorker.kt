@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import android.util.Log
 import androidx.room.Room
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -16,15 +17,12 @@ import org.jetbrains.anko.doAsync
 class BatteryWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
     private lateinit var db: ExtremaDatabase
-    private lateinit var participantData: Participant
 
     override fun doWork(): Result {
 
         db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
                 .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                 .build()
-
-        participantData = db.participantDao().getParticipant()
 
         val batteryStatus: Intent? = IntentFilter(Intent.ACTION_BATTERY_CHANGED).let { intentFilter ->
             applicationContext.registerReceiver(null, intentFilter)
@@ -38,12 +36,11 @@ class BatteryWorker(appContext: Context, workerParams: WorkerParameters) : Worke
         val batteryPercent: Double = batteryStatus.let { intent ->
             val level: Int? = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
             val scale: Int? = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-            level!!/scale!!.toDouble() * 100
+            level!! / scale!!.toDouble() * 100
         }
 
         val batteryCurrentStatus: String = batteryStatus.let { intent ->
-            val status: Int? = intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
-            when (status) {
+            when (intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1)) {
                 BatteryManager.BATTERY_STATUS_CHARGING -> "Charging"
                 BatteryManager.BATTERY_STATUS_DISCHARGING -> "Discharging"
                 BatteryManager.BATTERY_STATUS_FULL -> "Full"
@@ -53,22 +50,26 @@ class BatteryWorker(appContext: Context, workerParams: WorkerParameters) : Worke
             }
         }
 
-        val batteryNow = Battery(uid = null,
-                participantId = participantData.participantId,
-                entryDate = System.currentTimeMillis(),
-                batteryPercent = batteryPercent,
-                batteryTemperature = batteryTemp ?: -999.9,
-                batteryStatus = batteryCurrentStatus
-        )
-
         doAsync {
-            db.batteryDao().insert(batteryNow)
+            val participantData = db.participantDao().getParticipant()
+            val batteryNow = Battery(uid = null,
+                    participantId = participantData.participantId,
+                    entryDate = System.currentTimeMillis(),
+                    batteryPercent = batteryPercent,
+                    batteryTemperature = batteryTemp,
+                    batteryStatus = batteryCurrentStatus
+            )
 
-            println(batteryNow.toString())
+            db.batteryDao().insert(batteryNow)
+            Log.d(Home.TAG, batteryNow.toString())
+            db.close()
         }
 
-        db.close()
-
         return Result.success()
+    }
+
+    override fun onStopped() {
+        super.onStopped()
+        if(::db.isInitialized && db.isOpen) db.close()
     }
 }

@@ -20,31 +20,34 @@ import org.jetbrains.anko.doAsync
 class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams), LocationListener {
 
     private lateinit var db: ExtremaDatabase
-    private lateinit var participantData: Participant
-    private lateinit var locationManager: LocationManager
 
     override fun onLocationChanged(location: Location?) {
         if (location == null) return
 
-        if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            participantData = db.participantDao().getParticipant()
-            val satelliteCount = location.extras?.getInt("satellites")
-            val locationData = fi.oulu.ubicomp.extrema.database.Location(
-                    null,
-                    entryDate = System.currentTimeMillis(),
-                    participantId = participantData.participantId,
-                    latitude = location.latitude,
-                    longitude = location.longitude,
-                    accuracy = location.accuracy,
-                    speed = location.speed,
-                    source = location.provider,
-                    satellites = satelliteCount,
-                    isIndoors = (satelliteCount == 0)
-            )
+        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
+                .build()
 
+        if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             doAsync {
+                val participantData = db.participantDao().getParticipant()
+                val satelliteCount = location.extras?.getInt("satellites")
+                val locationData = fi.oulu.ubicomp.extrema.database.Location(
+                        null,
+                        entryDate = System.currentTimeMillis(),
+                        participantId = participantData.participantId,
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        accuracy = location.accuracy,
+                        speed = location.speed,
+                        source = location.provider,
+                        satellites = satelliteCount,
+                        isIndoors = (satelliteCount == 0)
+                )
+
                 db.locationDao().insert(locationData)
                 Log.d(Home.TAG, locationData.toString())
+                db.close()
             }
         }
     }
@@ -55,15 +58,10 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
 
     override fun doWork(): Result {
         if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
-                    .build()
-
-            locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
             val mHandlerThread = HandlerThread("EXTREMA-LOCATION")
             mHandlerThread.start()
 
+            val locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, mHandlerThread.looper)
             locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, mHandlerThread.looper)
             locationManager.requestSingleUpdate(LocationManager.PASSIVE_PROVIDER, this, mHandlerThread.looper)
@@ -74,6 +72,6 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
 
     override fun onStopped() {
         super.onStopped()
-        if (::db.isInitialized) db.close()
+        if (::db.isInitialized && db.isOpen) db.close()
     }
 }

@@ -1,9 +1,13 @@
 package fi.oulu.ubicomp.extrema.views
 
+import android.bluetooth.BluetoothAdapter
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
 import com.android.volley.Request
@@ -15,6 +19,7 @@ import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.R
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import kotlinx.android.synthetic.main.activity_account.*
+import org.altbeacon.beacon.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
@@ -22,7 +27,6 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class ViewAccount : AppCompatActivity() {
-
     lateinit var db: ExtremaDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +44,7 @@ class ViewAccount : AppCompatActivity() {
         val prefs = getSharedPreferences(Home.EXTREMA_PREFS, 0)
 
         doAsync {
+
             val participant = db.participantDao().getParticipant()
 
             uiThread {
@@ -56,25 +61,21 @@ class ViewAccount : AppCompatActivity() {
                 participantCountry.adapter = countries
                 participantCountry.setSelection(countries.getPosition(participant.participantCountry), true)
                 participantCountry.dispatchSetSelected(true)
-                participantCountry.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                        btnSaveParticipant.text = getString(R.string.update_title)
-                    }
+                //participantCountry.isEnabled = false
 
-                    override fun onNothingSelected(p0: AdapterView<*>?) {
-                    }
+                if (supportsBLE()) {
+                    ruuviStatus.setText(participant.ruuviTag)
+                } else {
+                    ruuviStatus.visibility = View.INVISIBLE
                 }
-
-                ruuviStatus.text = participant.ruuviTag
 
                 btnSaveParticipant.text = getString(R.string.ok)
                 btnSaveParticipant.setOnClickListener {
                     doAsync {
-                        if (participant.participantCountry != participantCountry.selectedItem.toString()) {
-
-                            participant.participantCountry = participantCountry.selectedItem.toString()
+                        if (participant.ruuviTag != ruuviStatus.text.toString()) {
                             participant.uid = null
-                            participant.onboardDate = System.currentTimeMillis()
+                            participant.ruuviTag = ruuviStatus.text.toString()
+                            participant.onboardDate = System.currentTimeMillis() //we create a new onboarding since the tag changed so it syncs
 
                             db.participantDao().insert(participant)
                             db.close()
@@ -91,7 +92,7 @@ class ViewAccount : AppCompatActivity() {
 
                             val serverRequest = JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
                                     Response.Listener {
-                                        println("OK $it")
+                                        println("OK ${it.toString(5)}")
                                     },
                                     Response.ErrorListener {
                                         if (it.networkResponse != null) {
@@ -107,6 +108,8 @@ class ViewAccount : AppCompatActivity() {
             }
         }
     }
+
+    fun supportsBLE() = packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
 
     override fun onDestroy() {
         super.onDestroy()

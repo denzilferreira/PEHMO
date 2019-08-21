@@ -43,7 +43,7 @@
     <string name="otherConsiderations">Muuta huomioitavaa terveydentilastasi?</string>
     <string name="rate_strong">Voimakasta</string>
     <string name="symptom_flue">Nuhakuumeen (”flunssan”) oireita</string>
-    <string name="ruuviError">Ei liitetty RuuviTag.</string>
+    <string name="ruuvi_scan">Napauta skannataksesi RuuviTag</string>
     <string name="locale">fi</string>
     <string name="welcome">Hei</string>
     <string name="sync">Lähettää</string>

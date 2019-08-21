@@ -89,7 +89,7 @@
         app:layout_constraintTop_toBottomOf="@+id/participantId"
         android:importantForAutofill="no" />
 
-    <TextView
+    <EditText
         android:id="@+id/ruuviStatus"
         android:layout_width="332dp"
         android:layout_height="wrap_content"

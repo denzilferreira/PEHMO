@@ -43,7 +43,7 @@
     <string name="survey_notification_title">PEHMO</string>
     <string name="survey_notification_text">Πατήστε εδώ για να απαντήσετε στα καθημερινά σας συμπτώματα!</string>
     <string name="symptom_flue">Συμπτώματα ενός κοινού κρυολογήματος (\"γρίπη\")</string>
-    <string name="ruuviError">Δεν έχει συνδεθεί RuuviTag.</string>
+    <string name="ruuvi_scan">Αγγίξτε για να σαρώσετε το RuuviTag</string>
     <string name="locale">el</string>
     <string name="sync">Στείλετε</string>
     <string name="ok">OK</string>

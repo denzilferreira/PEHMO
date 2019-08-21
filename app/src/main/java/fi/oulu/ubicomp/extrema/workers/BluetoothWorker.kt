@@ -2,6 +2,7 @@ package fi.oulu.ubicomp.extrema.workers
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
@@ -17,25 +18,16 @@ import androidx.work.WorkerParameters
 import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.database.Bluetooth
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
-import fi.oulu.ubicomp.extrema.database.Participant
 import org.jetbrains.anko.doAsync
 
 class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bleHandler: Handler
-    private lateinit var scanSettings: ScanSettings
-
+    private lateinit var scanner: BluetoothLeScanner
     private lateinit var db: ExtremaDatabase
-    private lateinit var participantData: Participant
 
     override fun doWork(): Result {
-
-        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
-                .build()
-
-        participantData = db.participantDao().getParticipant()
 
         val mHandlerThread = HandlerThread("EXTREMA-BLUETOOTH")
         mHandlerThread.start()
@@ -48,55 +40,54 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
                 val btEnable = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 applicationContext.startActivity(btEnable)
             } else {
-                scanSettings = ScanSettings.Builder()
-                        .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
-                        .build()
+                scanner = bluetoothAdapter.bluetoothLeScanner
                 bleHandler.post(scanRunnable())
             }
         }
         return Result.success()
     }
 
-    fun scanRunnable() = Runnable {
-        val scanner = bluetoothAdapter.bluetoothLeScanner
-        if (scanner != null) {
-            bleHandler.postDelayed(stopScan(), 10000)
-            scanner.startScan(scanCallback)
-            scanner.startScan(null, scanSettings, scanCallback)
-        }
+    private fun scanRunnable() = Runnable {
+        scanner.flushPendingScanResults(scanCallback)
+        bleHandler.postDelayed(stopScan(), 10000)
+        scanner.startScan(null,
+                ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).build(),
+                scanCallback)
     }
 
-    fun stopScan() = Runnable {
-        val scanner = bluetoothAdapter.bluetoothLeScanner
-        if (scanner != null) {
-            scanner.stopScan(scanCallback)
-        }
+    private fun stopScan() = Runnable {
+        bluetoothAdapter.bluetoothLeScanner?.stopScan(scanCallback)
     }
 
-    val scanCallback = object : ScanCallback() {
+    private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             super.onScanResult(callbackType, result)
 
-            val btDevice: BluetoothDevice = result!!.device
-            if (!btDevice.address.equals(participantData.ruuviTag, ignoreCase = true)) return
-
-            val bluetoothData = Bluetooth(null,
-                    participantId = participantData.participantId,
-                    entryDate = System.currentTimeMillis(),
-                    macAddress = btDevice.address,
-                    btName = btDevice.name,
-                    btRSSI = result.rssi
-            )
+            db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
+                    .build()
 
             doAsync {
-                db.bluetoothDao().insert(bluetoothData)
-                Log.d(Home.TAG, bluetoothData.toString())
+                val participantData = db.participantDao().getParticipant()
+                val btDevice: BluetoothDevice = result!!.device
+                if (btDevice.address.equals(participantData.ruuviTag, ignoreCase = true)) {
+                    val bluetoothData = Bluetooth(null,
+                            participantId = participantData.participantId,
+                            entryDate = System.currentTimeMillis(),
+                            macAddress = btDevice.address,
+                            btName = btDevice.name,
+                            btRSSI = result.rssi
+                    )
+                    db.bluetoothDao().insert(bluetoothData)
+                    Log.d(Home.TAG, bluetoothData.toString())
+                    db.close()
+                }
             }
         }
     }
 
     override fun onStopped() {
         super.onStopped()
-        if (::db.isInitialized) db.close()
+        if (::db.isInitialized && db.isOpen) db.close()
     }
 }
