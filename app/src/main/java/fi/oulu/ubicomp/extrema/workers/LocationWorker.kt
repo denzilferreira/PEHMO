@@ -22,14 +22,13 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
     private lateinit var db: ExtremaDatabase
     private lateinit var participantData: Participant
     private lateinit var locationManager: LocationManager
-    private lateinit var latestLocation: Location
 
     override fun onLocationChanged(location: Location?) {
         if (location == null) return
 
         if (applicationContext.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             participantData = db.participantDao().getParticipant()
-            val satelliteCount = latestLocation.extras?.getInt("satellites")
+            val satelliteCount = location.extras?.getInt("satellites")
             val locationData = fi.oulu.ubicomp.extrema.database.Location(
                     null,
                     entryDate = System.currentTimeMillis(),
