@@ -1,12 +1,15 @@
 package fi.oulu.ubicomp.extrema
 
 import android.Manifest
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.bluetooth.BluetoothAdapter
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
@@ -16,6 +19,7 @@ import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.SpinnerAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -46,6 +50,9 @@ class Home : AppCompatActivity(), BeaconConsumer {
     companion object {
         const val TAG = "EXTREMA"
 
+        const val ACTION_RUUVITAG = "ACTION_RUUVITAG"
+        const val EXTRA_RUUVITAG = "EXTRA_RUUVITAG"
+
         const val EXTREMA_PERMISSIONS = 12345
         const val EXTREMA_PREFS = "fi.oulu.ubicomp.extrema.prefs"
         const val UUID = "deviceId"
@@ -58,9 +65,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
         val region: Region = Region("fi.oulu.ubicomp.extrema", null, null, null)
 
         lateinit var ruuvi: Beacon
-        lateinit var beaconConsumer: BeaconConsumer
-
-        var participantData: Participant? = null
 
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
@@ -72,12 +76,15 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `battery` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT, `participantId` TEXT NOT NULL, `entryDate` INTEGER NOT NULL, `batteryPercent` REAL NOT NULL, `batteryTemperature` REAL NOT NULL, `batteryStatus` TEXT NOT NULL)")
             }
         }
+
+        lateinit var ruuviTxt : EditText
     }
 
     lateinit var beaconManager: BeaconManager
+    lateinit var beaconConsumer: BeaconConsumer
     lateinit var rangeNotifier: RuuviRangeNotifier
 
-    var db: ExtremaDatabase? = null
+    val ruuviReceiver = RuuviReceiver()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,12 +95,9 @@ class Home : AppCompatActivity(), BeaconConsumer {
         }
 
         setContentView(R.layout.activity_account)
-
-        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-                .build()
-
         participantCountry.adapter = getCountries()
+
+        ruuviTxt = ruuviStatus
 
         btnSaveParticipant.setOnClickListener {
             if (participantName.text.isBlank() or participantId.text.isBlank() or participantEmail.text.isBlank()) {
@@ -128,8 +132,12 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 }
 
                 doAsync {
-                    db?.participantDao()?.insert(participant)
-                    db?.close()
+                    val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                            .build()
+
+                    db.participantDao().insert(participant)
+                    db.close()
 
                     val sync = OneTimeWorkRequest.Builder(SyncWorker::class.java).build()
                     WorkManager.getInstance(applicationContext).enqueue(sync)
@@ -143,6 +151,16 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     startService(Intent(applicationContext, Pehmo::class.java))
                     startActivity(Intent(applicationContext, ViewSurvey::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 }
+            }
+        }
+
+        registerReceiver(ruuviReceiver, IntentFilter(ACTION_RUUVITAG))
+    }
+
+    class RuuviReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action.equals(ACTION_RUUVITAG)) {
+                ruuviTxt.setText(intent?.getStringExtra(EXTRA_RUUVITAG)?:"")
             }
         }
     }
@@ -176,8 +194,12 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
         } else {
             doAsync {
-                participantData = db?.participantDao()?.getParticipant()
-                if (participantData != null) {
+                val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                        .build()
+
+                val participantData = db.participantDao().getParticipant()
+                if (participantData.isNotEmpty()) {
                     finish()
                     startService(Intent(applicationContext, Pehmo::class.java))
                     startActivity(Intent(applicationContext, ViewSurvey::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
@@ -185,7 +207,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
 
                         beaconManager = BeaconManager.getInstanceForApplication(applicationContext)
-                        rangeNotifier = RuuviRangeNotifier()
+                        rangeNotifier = RuuviRangeNotifier(applicationContext)
 
                         val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
                         if (bluetoothAdapter?.isEnabled == false) {
@@ -207,7 +229,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
         }
     }
 
-    fun checkDoze(context: Context) : Boolean {
+    fun checkDoze(context: Context): Boolean {
         var isIgnore = true
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
@@ -248,11 +270,15 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (::beaconManager.isInitialized) {
-            beaconManager?.removeRangeNotifier(rangeNotifier)
-            beaconManager?.stopRangingBeaconsInRegion(region)
-            beaconManager?.unbind(beaconConsumer)
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            if (::beaconManager.isInitialized) {
+                beaconManager.removeRangeNotifier(rangeNotifier)
+                beaconManager.stopRangingBeaconsInRegion(region)
+                beaconManager.unbind(beaconConsumer)
+            }
         }
+
+        unregisterReceiver(ruuviReceiver)
 
         startService(Intent(applicationContext, Pehmo::class.java))
     }
@@ -303,12 +329,13 @@ class Home : AppCompatActivity(), BeaconConsumer {
         return super.onOptionsItemSelected(item)
     }
 
-    class RuuviRangeNotifier : RangeNotifier {
+    class RuuviRangeNotifier(context: Context) : RangeNotifier {
+        var mContext = context
         override fun didRangeBeaconsInRegion(beacons: MutableCollection<Beacon>?, region: Region?) {
             if (beacons?.size ?: 0 > 0) {
                 val closest = beacons?.maxBy { it.rssi }
                 ruuvi = closest!!
-                println("Closest: ${ruuvi.bluetoothAddress} : ${ruuvi.rssi}")
+                mContext.sendBroadcast(Intent(ACTION_RUUVITAG).putExtra(EXTRA_RUUVITAG, ruuvi.bluetoothAddress))
             }
         }
     }

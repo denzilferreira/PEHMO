@@ -37,15 +37,14 @@ class ViewAccount : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
-                .build()
-
         val prefs = getSharedPreferences(Home.EXTREMA_PREFS, 0)
 
         doAsync {
+            val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
+                    .build()
 
-            val participant = db.participantDao().getParticipant()
+            val participant = db.participantDao().getParticipant().first()
 
             uiThread {
                 participantName.setText(participant.participantName)
@@ -61,7 +60,6 @@ class ViewAccount : AppCompatActivity() {
                 participantCountry.adapter = countries
                 participantCountry.setSelection(countries.getPosition(participant.participantCountry), true)
                 participantCountry.dispatchSetSelected(true)
-                //participantCountry.isEnabled = false
 
                 if (supportsBLE()) {
                     ruuviStatus.setText(participant.ruuviTag)
@@ -78,7 +76,6 @@ class ViewAccount : AppCompatActivity() {
                             participant.onboardDate = System.currentTimeMillis() //we create a new onboarding since the tag changed so it syncs
 
                             db.participantDao().insert(participant)
-                            db.close()
 
                             val jsonBuilder = GsonBuilder()
                             val jsonPost = jsonBuilder.create()
@@ -103,18 +100,16 @@ class ViewAccount : AppCompatActivity() {
                             requestQueue.add(serverRequest)
                         }
                     }
+
                     finish()
                 }
             }
+
+            db.close()
         }
     }
 
     fun supportsBLE() = packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (db.isOpen) db.close()
-    }
 
     fun getCountries(): ArrayAdapter<String> {
         val locales = Locale.getAvailableLocales()

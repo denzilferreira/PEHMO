@@ -16,13 +16,7 @@ import org.jetbrains.anko.doAsync
 
 class BatteryWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
-    private lateinit var db: ExtremaDatabase
-
     override fun doWork(): Result {
-
-        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
-                .build()
 
         val batteryStatus: Intent? = IntentFilter(Intent.ACTION_BATTERY_CHANGED).let { intentFilter ->
             applicationContext.registerReceiver(null, intentFilter)
@@ -51,9 +45,13 @@ class BatteryWorker(appContext: Context, workerParams: WorkerParameters) : Worke
         }
 
         doAsync {
+            val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
+                    .build()
+
             val participantData = db.participantDao().getParticipant()
             val batteryNow = Battery(uid = null,
-                    participantId = participantData.participantId,
+                    participantId = participantData.first().participantId,
                     entryDate = System.currentTimeMillis(),
                     batteryPercent = batteryPercent,
                     batteryTemperature = batteryTemp,
@@ -66,10 +64,5 @@ class BatteryWorker(appContext: Context, workerParams: WorkerParameters) : Worke
         }
 
         return Result.success()
-    }
-
-    override fun onStopped() {
-        super.onStopped()
-        if(::db.isInitialized && db.isOpen) db.close()
     }
 }

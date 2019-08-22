@@ -25,7 +25,6 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bleHandler: Handler
     private lateinit var scanner: BluetoothLeScanner
-    private lateinit var db: ExtremaDatabase
 
     override fun doWork(): Result {
 
@@ -63,16 +62,16 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             super.onScanResult(callbackType, result)
 
-            db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
-                    .build()
-
             doAsync {
+                val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                        .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
+                        .build()
+
                 val participantData = db.participantDao().getParticipant()
                 val btDevice: BluetoothDevice = result!!.device
-                if (btDevice.address.equals(participantData.ruuviTag, ignoreCase = true)) {
+                if (btDevice.address.equals(participantData.first().ruuviTag, ignoreCase = true)) {
                     val bluetoothData = Bluetooth(null,
-                            participantId = participantData.participantId,
+                            participantId = participantData.first().participantId,
                             entryDate = System.currentTimeMillis(),
                             macAddress = btDevice.address,
                             btName = btDevice.name,
@@ -84,10 +83,5 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
                 }
             }
         }
-    }
-
-    override fun onStopped() {
-        super.onStopped()
-        if (::db.isInitialized && db.isOpen) db.close()
     }
 }

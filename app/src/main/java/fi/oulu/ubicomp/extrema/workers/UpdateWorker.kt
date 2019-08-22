@@ -25,7 +25,7 @@ class UpdateWorker(appContext: Context, workerParams: WorkerParameters) : Worker
                 Response.Listener<JSONObject> {
                     if (it.getInt("id") > BuildConfig.VERSION_CODE) {
                         val relativePath = it.getJSONArray("artifacts").getJSONObject(0).getString("relativePath")
-                        var changes = it.getJSONObject("changeSet").getJSONArray("items")
+                        val changes = it.getJSONObject("changeSet").getJSONArray("items")
                         var changesStr = ""
                         if (changes.length() > 0) changesStr = changes.getJSONObject(0).getString("msg")
 

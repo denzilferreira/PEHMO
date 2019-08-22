@@ -40,8 +40,6 @@ class ViewSurvey : AppCompatActivity() {
     lateinit var save: Button
 
     var surveyData: JSONObject = JSONObject()
-    var db: ExtremaDatabase? = null
-    var participantData: Participant? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,15 +47,17 @@ class ViewSurvey : AppCompatActivity() {
         setContentView(R.layout.activity_view_survey)
 
         doAsync {
-            db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+            val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
                     .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
-            participantData = db?.participantDao()?.getParticipant()
+            val participantData = db.participantDao().getParticipant().first()
 
             uiThread {
-                welcomeHeader.text = "${resources.getString(R.string.welcome)} ${participantData?.participantName}"
+                welcomeHeader.text = "${resources.getString(R.string.welcome)} ${participantData.participantName}"
             }
+
+            db.close()
         }
     }
 
@@ -125,14 +125,23 @@ class ViewSurvey : AppCompatActivity() {
             surveyData.put("otherObs", otherObs.text.toString())
 
             doAsync {
+
+                val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                        .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
+                        .build()
+
+                val participantData = db.participantDao().getParticipant().first()
+
                 val survey = Survey(null,
-                        participantId = participantData?.participantId,
+                        participantId = participantData.participantId,
                         entryDate = System.currentTimeMillis(),
                         surveyData = surveyData.toString())
 
                 println("Survey data: ${surveyData.toString(5)}")
 
-                db?.surveyDao()?.insert(survey)
+                db.surveyDao().insert(survey)
+
+                db.close()
 
                 uiThread {
                     toast(getString(R.string.thanks)).show()
@@ -141,11 +150,6 @@ class ViewSurvey : AppCompatActivity() {
 
             finish()
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        db?.close()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

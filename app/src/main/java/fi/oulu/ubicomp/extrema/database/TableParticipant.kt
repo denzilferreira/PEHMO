@@ -16,7 +16,7 @@ data class Participant(
 @Dao
 interface ParticipantDao {
     @Query("SELECT * FROM participant ORDER BY uid DESC LIMIT 1")
-    fun getParticipant(): Participant
+    fun getParticipant(): Array<Participant>
 
     @Query("SELECT * FROM participant WHERE onboardDate > :lastSync")
     fun getPendingSync(lastSync : Long) : Array<Participant>

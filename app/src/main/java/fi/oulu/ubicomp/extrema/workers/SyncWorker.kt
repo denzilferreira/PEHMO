@@ -15,20 +15,17 @@ import org.json.JSONObject
 
 class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
-    private lateinit var db: ExtremaDatabase
-
     override fun doWork(): Result {
         val prefs = applicationContext.getSharedPreferences(Home.EXTREMA_PREFS, 0)
-
-        db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
-                .build()
-
         val requestQueue = Volley.newRequestQueue(applicationContext)
 
         println("Sync started...")
 
         doAsync {
+            val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
+                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
+                    .build()
+
             val pendingParticipant = db.participantDao().getPendingSync(prefs.getLong("participant", 0))
             if (pendingParticipant.isNotEmpty()) {
                 val jsonBuilder = GsonBuilder()
@@ -210,11 +207,5 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         }
 
         return Result.success()
-    }
-
-    override fun onStopped() {
-        super.onStopped()
-
-        if (::db.isInitialized && db.isOpen) db.close()
     }
 }
