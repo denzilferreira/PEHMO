@@ -298,7 +298,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 countries.add(country.displayCountry)
         }
         Collections.sort(countries, String.CASE_INSENSITIVE_ORDER)
-        return ArrayAdapter(applicationContext, android.R.layout.simple_spinner_item, countries)
+        return ArrayAdapter(applicationContext, R.layout.country_spinner_item, countries)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
