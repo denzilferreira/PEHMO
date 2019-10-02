@@ -18,6 +18,7 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.SpinnerAdapter
@@ -30,6 +31,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import com.google.android.gms.location.LocationServices
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.database.Participant
 import fi.oulu.ubicomp.extrema.services.Pehmo
@@ -77,7 +79,8 @@ class Home : AppCompatActivity(), BeaconConsumer {
             }
         }
 
-        lateinit var ruuviTxt : EditText
+        lateinit var countries: ArrayAdapter<String>
+        lateinit var ruuviTxt: EditText
     }
 
     lateinit var beaconManager: BeaconManager
@@ -95,7 +98,8 @@ class Home : AppCompatActivity(), BeaconConsumer {
         }
 
         setContentView(R.layout.activity_account)
-        participantCountry.adapter = getCountries()
+        countries = getCountries()
+        participantCountry.adapter = countries
 
         ruuviTxt = ruuviStatus
 
@@ -160,7 +164,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
     class RuuviReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action.equals(ACTION_RUUVITAG)) {
-                ruuviTxt.setText(intent?.getStringExtra(EXTRA_RUUVITAG)?:"")
+                ruuviTxt.setText(intent?.getStringExtra(EXTRA_RUUVITAG) ?: "")
             }
         }
     }
@@ -175,16 +179,17 @@ class Home : AppCompatActivity(), BeaconConsumer {
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
         permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
+        if (Build.VERSION_CODES.Q == Build.VERSION.SDK_INT) {
+            permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        }
+
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
         ) {
             if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                beaconConsumer = this
-
                 if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
                         || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
-
                     permissions.add(Manifest.permission.BLUETOOTH)
                     permissions.add(Manifest.permission.BLUETOOTH_ADMIN)
                 }
@@ -206,6 +211,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 } else {
                     if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
 
+                        beaconConsumer = this@Home
                         beaconManager = BeaconManager.getInstanceForApplication(applicationContext)
                         rangeNotifier = RuuviRangeNotifier(applicationContext)
 
@@ -215,7 +221,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                             startActivityForResult(enableBtIntent, EXTREMA_PERMISSIONS)
                         }
 
-                        beaconManager.backgroundMode = false
+                        beaconManager.backgroundMode = true
                         beaconManager.beaconParsers.clear()
                         beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV2and4_LAYOUT))
                         beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV3_LAYOUT))
@@ -223,6 +229,13 @@ class Home : AppCompatActivity(), BeaconConsumer {
                         beaconManager.backgroundScanPeriod = 5000
                         beaconManager.bind(beaconConsumer)
                         beaconManager.startRangingBeaconsInRegion(region)
+                    }
+
+                    uiThread {
+                        val countryPhone = resources.configuration.locale.displayCountry
+                        println("I am in $countryPhone")
+                        participantCountry.setSelection(countries.getPosition(countryPhone), true)
+                        participantCountry.dispatchSetSelected(true)
                     }
                 }
             }
@@ -290,7 +303,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
         beaconManager.startRangingBeaconsInRegion(region)
     }
 
-    private fun getCountries(): SpinnerAdapter {
+    private fun getCountries(): ArrayAdapter<String> {
         val locales = Locale.getAvailableLocales()
         val countries = ArrayList<String>()
         for (country in locales) {

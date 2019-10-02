@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "983202322593",
+    "firebase_url": "https://ubicomp-cerh-pehmo.firebaseio.com",
+    "project_id": "ubicomp-cerh-pehmo",
+    "storage_bucket": "ubicomp-cerh-pehmo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:983202322593:android:90a63cee539282944b38e0",
+        "android_client_info": {
+          "package_name": "fi.oulu.ubicomp.extrema"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "983202322593-i6htg7e56uv33p2r9vgp1r4hhrclcmse.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "fi.oulu.ubicomp.extrema",
+            "certificate_hash": "6a3594fd69ebeb735cab5b401bafccd497466da7"
+          }
+        },
+        {
+          "client_id": "983202322593-jva4h88bp0d949do35j2qbmjtkg6ira7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKsT4MuYFLRa6QwCwRzKBv2B6Fhi7FKC8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "983202322593-jva4h88bp0d949do35j2qbmjtkg6ira7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
