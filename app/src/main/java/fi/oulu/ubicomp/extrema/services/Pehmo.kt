@@ -9,11 +9,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.IBinder
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.R
@@ -21,6 +23,7 @@ import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import fi.oulu.ubicomp.extrema.views.ViewSurvey
 import fi.oulu.ubicomp.extrema.workers.*
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
 import java.util.concurrent.TimeUnit
 
 class Pehmo : Service() {
@@ -57,6 +60,10 @@ class Pehmo : Service() {
             notification.setChannelId("EXTREMA")
 
         startForeground(PEHMO_FOREGROUND, notification.build())
+
+        FirebaseMessaging.getInstance().subscribeToTopic("location").addOnCompleteListener { task ->
+            toast(getString(R.string.pehmo_foreground))
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
