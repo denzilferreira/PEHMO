@@ -58,7 +58,7 @@ class UpdateWorker(appContext: Context, workerParams: WorkerParameters) : Worker
                                 .setOnlyAlertOnce(true)
                                 .setPriority(NotificationCompat.PRIORITY_HIGH)
 
-                        notificationManager.notify(Home.EXTREMA_PERMISSIONS, builder.build())
+                        notificationManager.notify(Home.PEHMO_PERMISSIONS, builder.build())
                     }
                 },
                 Response.ErrorListener {

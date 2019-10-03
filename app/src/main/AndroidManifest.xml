@@ -26,6 +26,18 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             android:usesCleartextTraffic="true">
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_extrema_update" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="EXTREMA" />
+
         <activity
                 android:name=".views.ViewSurvey"
                 android:configChanges="orientation|keyboardHidden"
@@ -50,6 +62,11 @@
         <service android:name=".services.Pehmo"
                  android:foregroundServiceType="location"
         />
+        <service android:name=".services.FirebaseCM" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
 
         <provider
                 android:name="androidx.core.content.FileProvider"

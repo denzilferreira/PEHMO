@@ -204,6 +204,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 println("Nothing to sync [battery]")
             }
             println("Sync finished!")
+
+            db.close()
         }
 
         return Result.success()

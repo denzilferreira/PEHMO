@@ -94,10 +94,15 @@ dependencies {
     //Bluetooth libraries for RuuviTag support and Beacon scanning
     implementation 'org.altbeacon:android-beacon-library:2.16.3'
     implementation 'com.neovisionaries:nv-bluetooth:1.8'
+
+    //Added firebase for FCM messaging for triggering location fixed when phone is under Doze
     implementation 'com.google.firebase:firebase-analytics:17.2.0'
     implementation 'com.google.firebase:firebase-messaging:20.0.0'
+
+    //Adding Google Fused provider for location tracking
     implementation 'com.google.android.gms:play-services-location:17.0.0'
-    implementation 'com.koushikdutta.ion:ion:2.2.1'
+
+    implementation 'com.koushikdutta.ion:ion:3.0.8'
 }
 
 apply plugin: 'com.google.gms.google-services'

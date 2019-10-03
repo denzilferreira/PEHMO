@@ -73,7 +73,7 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
                         .setOnlyAlertOnce(true)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
 
-                notificationManager.notify(Home.EXTREMA_PERMISSIONS, builder.build())
+                notificationManager.notify(Home.PEHMO_SURVEY, builder.build())
             }
 
             db.close()

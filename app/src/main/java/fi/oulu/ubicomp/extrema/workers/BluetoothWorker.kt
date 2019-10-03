@@ -79,8 +79,8 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
                     )
                     db.bluetoothDao().insert(bluetoothData)
                     Log.d(Home.TAG, bluetoothData.toString())
-                    db.close()
                 }
+                db.close()
             }
         }
     }

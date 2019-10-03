@@ -120,7 +120,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="jar:file:/home/ferreira/Applications/ideaIC-2019.2/idea-IC-192.5728.98/plugins/android/lib/android.jar!/images/material_design_icons/device/ic_battery_unknown_black_24dp.xml" />
+                                                <entry key="url" value="jar:file:/home/ferreira/Applications/android-studio/plugins/android/lib/android.jar!/images/material_design_icons/communication/ic_location_off_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -141,7 +141,7 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="outputName" value="ic_stat_pehmo_battery" />
+                                      <entry key="outputName" value="ic_stat_pehmo_location" />
                                     </map>
                                   </option>
                                 </PersistentState>

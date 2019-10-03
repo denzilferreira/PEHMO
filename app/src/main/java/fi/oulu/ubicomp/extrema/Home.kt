@@ -1,7 +1,6 @@
 package fi.oulu.ubicomp.extrema
 
 import android.Manifest
-import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -12,16 +11,19 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.location.Geocoder
+import android.location.Location
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.SpinnerAdapter
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -55,7 +57,11 @@ class Home : AppCompatActivity(), BeaconConsumer {
         const val ACTION_RUUVITAG = "ACTION_RUUVITAG"
         const val EXTRA_RUUVITAG = "EXTRA_RUUVITAG"
 
-        const val EXTREMA_PERMISSIONS = 12345
+        const val PEHMO_PERMISSIONS = 12345
+        const val PEHMO_LOCATION = 123456
+        const val PEHMO_SURVEY = 1234
+        const val PEHMO_BATTERY = 123
+        const val PEHMO_BLUETOOTH = 12
         const val EXTREMA_PREFS = "fi.oulu.ubicomp.extrema.prefs"
         const val UUID = "deviceId"
         const val STUDY_URL = "https://co2.awareframework.com:8443/insert"
@@ -99,7 +105,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
         setContentView(R.layout.activity_account)
         countries = getCountries()
-        participantCountry.adapter = countries
+        participantCountry.adapter = countries as SpinnerAdapter
 
         ruuviTxt = ruuviStatus
 
@@ -147,7 +153,9 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     WorkManager.getInstance(applicationContext).enqueue(sync)
 
                     uiThread {
-                        toast(getString(R.string.participant_created) + " " + getString(R.string.welcome) + " ${participant.participantName}!").show()
+                        toast(getString(R.string.participant_created) + " " + getString(R.string.welcome) + " ${participant.participantName}!")
+                                .apply { duration = Toast.LENGTH_LONG }
+                                .show()
                     }
 
                     finish()
@@ -173,13 +181,14 @@ class Home : AppCompatActivity(), BeaconConsumer {
         super.onResume()
 
         checkDoze(applicationContext)
+        checkLocation(applicationContext)
 
         val permissions: MutableList<String> = ArrayList()
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
         permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
-        if (Build.VERSION_CODES.Q == Build.VERSION.SDK_INT) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         }
 
@@ -195,7 +204,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 }
             }
 
-            ActivityCompat.requestPermissions(this, permissions.toTypedArray(), EXTREMA_PERMISSIONS)
+            ActivityCompat.requestPermissions(this, permissions.toTypedArray(), PEHMO_PERMISSIONS)
 
         } else {
             doAsync {
@@ -205,12 +214,15 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
                 val participantData = db.participantDao().getParticipant()
                 if (participantData.isNotEmpty()) {
+
+                    db.close()
+
                     finish()
                     startService(Intent(applicationContext, Pehmo::class.java))
                     startActivity(Intent(applicationContext, ViewSurvey::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+
                 } else {
                     if (packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-
                         beaconConsumer = this@Home
                         beaconManager = BeaconManager.getInstanceForApplication(applicationContext)
                         rangeNotifier = RuuviRangeNotifier(applicationContext)
@@ -218,10 +230,10 @@ class Home : AppCompatActivity(), BeaconConsumer {
                         val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
                         if (bluetoothAdapter?.isEnabled == false) {
                             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                            startActivityForResult(enableBtIntent, EXTREMA_PERMISSIONS)
+                            startActivityForResult(enableBtIntent, PEHMO_BLUETOOTH)
                         }
 
-                        beaconManager.backgroundMode = true
+                        beaconManager.backgroundMode = false
                         beaconManager.beaconParsers.clear()
                         beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV2and4_LAYOUT))
                         beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(RuuviV3_LAYOUT))
@@ -232,11 +244,19 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     }
 
                     uiThread {
-                        val countryPhone = resources.configuration.locale.displayCountry
-                        println("I am in $countryPhone")
-                        participantCountry.setSelection(countries.getPosition(countryPhone), true)
-                        participantCountry.dispatchSetSelected(true)
+                        val fusedClient = LocationServices.getFusedLocationProviderClient(applicationContext)
+                        fusedClient.lastLocation.addOnCompleteListener { task ->
+                            val location : Location? = task.result
+                            if (location != null) {
+                                val geocoder = Geocoder(applicationContext, Locale.getDefault())
+                                val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                                participantCountry.setSelection(countries.getPosition(addresses.first().countryName), true)
+                                participantCountry.dispatchSetSelected(true)
+                            }
+                        }
                     }
+
+                    db.close()
                 }
             }
         }
@@ -248,9 +268,42 @@ class Home : AppCompatActivity(), BeaconConsumer {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
             val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
             isIgnore = powerManager.isIgnoringBatteryOptimizations(context.packageName)
-        }
 
-        if (!isIgnore) {
+            if (!isIgnore) {
+                val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val name = applicationContext.getString(R.string.app_name)
+                    val descriptionText = applicationContext.getString(R.string.app_name)
+                    val channel = NotificationChannel("EXTREMA", name, NotificationManager.IMPORTANCE_DEFAULT).apply {
+                        description = descriptionText
+                    }
+                    notificationManager.createNotificationChannel(channel)
+                }
+
+                val batteryIntent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+                val pendingBattery = PendingIntent.getActivity(applicationContext, 0, batteryIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+                val builder = NotificationCompat.Builder(applicationContext, "EXTREMA")
+                        .setSmallIcon(R.drawable.ic_stat_pehmo_battery)
+                        .setContentTitle(getString(R.string.app_name))
+                        .setContentText(getString(R.string.battery_ignore))
+                        .setContentIntent(pendingBattery)
+                        .setAutoCancel(true)
+                        .setOnlyAlertOnce(true)
+                        .setDefaults(NotificationCompat.DEFAULT_ALL)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+                notificationManager.notify(Home.PEHMO_BATTERY, builder.build())
+            }
+        }
+        return isIgnore
+    }
+
+    fun checkLocation(context : Context) : Boolean {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val isLocationEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        if (!isLocationEnabled) {
             val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val name = applicationContext.getString(R.string.app_name)
@@ -261,24 +314,24 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 notificationManager.createNotificationChannel(channel)
             }
 
-            val batteryIntent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
+            val locationIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
-            val pendingBattery = PendingIntent.getActivity(applicationContext, 0, batteryIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val pendingLocation = PendingIntent.getActivity(applicationContext, 0, locationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
             val builder = NotificationCompat.Builder(applicationContext, "EXTREMA")
-                    .setSmallIcon(R.drawable.ic_stat_pehmo_battery)
+                    .setSmallIcon(R.drawable.ic_stat_pehmo_location)
                     .setContentTitle(getString(R.string.app_name))
-                    .setContentText(getString(R.string.battery_ignore))
-                    .setContentIntent(pendingBattery)
+                    .setContentText(getString(R.string.location_disable))
+                    .setContentIntent(pendingLocation)
                     .setAutoCancel(true)
                     .setOnlyAlertOnce(true)
                     .setDefaults(NotificationCompat.DEFAULT_ALL)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
 
-            notificationManager.notify(Home.EXTREMA_PERMISSIONS, builder.build())
+            notificationManager.notify(Home.PEHMO_LOCATION, builder.build())
         }
 
-        return isIgnore
+        return isLocationEnabled
     }
 
     override fun onDestroy() {
@@ -290,9 +343,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                 beaconManager.unbind(beaconConsumer)
             }
         }
-
         unregisterReceiver(ruuviReceiver)
-
         startService(Intent(applicationContext, Pehmo::class.java))
     }
 
@@ -316,7 +367,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if (grantResults.contains(PackageManager.PERMISSION_DENIED)) {
-            ActivityCompat.requestPermissions(this, permissions, EXTREMA_PERMISSIONS)
+            ActivityCompat.requestPermissions(this, permissions, PEHMO_PERMISSIONS)
         }
     }
 
@@ -335,7 +386,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
             R.id.menu_sync -> {
                 val sync = OneTimeWorkRequest.Builder(SyncWorker::class.java).build()
                 WorkManager.getInstance(applicationContext).enqueue(sync)
-                toast(getString(R.string.sync))
+                toast(getString(R.string.sync)).show()
                 return true
             }
         }

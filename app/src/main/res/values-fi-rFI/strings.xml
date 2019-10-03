@@ -55,4 +55,5 @@
     <string name="participant_created">Profiili on luotu!</string>
     <string name="pehmo_foreground">Kiitos osallistumisesta.</string>
     <string name="battery_ignore">Anna PEHMO: n ajaa.</string>
+    <string name="location_disable">Ota sijainti käyttöön.</string>
 </resources>

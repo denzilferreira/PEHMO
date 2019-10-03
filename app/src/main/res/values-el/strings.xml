@@ -54,4 +54,5 @@
     <string name="participant_created">Το προφίλ δημιουργήθηκε!</string>
     <string name="pehmo_foreground">Ευχαριστούμε για τη συμμετοχή σας.</string>
     <string name="battery_ignore">Επιτρέψτε στο PEHMO να τρέξει.</string>
+    <string name="location_disable">Ενεργοποιήστε την τοποθεσία</string>
 </resources>
