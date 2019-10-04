@@ -62,7 +62,7 @@ class Pehmo : Service() {
         startForeground(PEHMO_FOREGROUND, notification.build())
 
         FirebaseMessaging.getInstance().subscribeToTopic("location").addOnCompleteListener { task ->
-            toast(getString(R.string.pehmo_foreground))
+            toast(getString(R.string.pehmo_foreground)).show()
         }
     }
 

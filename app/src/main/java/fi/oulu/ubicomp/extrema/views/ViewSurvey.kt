@@ -166,7 +166,7 @@ class ViewSurvey : AppCompatActivity() {
             R.id.menu_sync -> {
                 val sync = OneTimeWorkRequest.Builder(SyncWorker::class.java).build()
                 WorkManager.getInstance(applicationContext).enqueue(sync)
-                toast(getString(R.string.sync))
+                toast(getString(R.string.sync)).show()
                 return true
             }
         }

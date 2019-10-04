@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "983202322593-3nhf86ci3f60hvdffmbsp24upec8hu7t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "fi.oulu.ubicomp.extrema",
+            "certificate_hash": "b2f9e96b646c53cc85b33be45afde6a648a7ab6f"
+          }
+        },
+        {
           "client_id": "983202322593-i6htg7e56uv33p2r9vgp1r4hhrclcmse.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
