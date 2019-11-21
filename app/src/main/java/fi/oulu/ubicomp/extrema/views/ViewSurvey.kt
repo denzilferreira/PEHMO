@@ -142,12 +142,8 @@ class ViewSurvey : AppCompatActivity() {
                 db.surveyDao().insert(survey)
 
                 db.close()
-
-                uiThread {
-                    toast(getString(R.string.thanks)).show()
-                }
             }
-
+            toast(getString(R.string.thanks)).show()
             finish()
         }
     }

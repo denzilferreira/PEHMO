@@ -81,19 +81,33 @@ class ViewAccount : AppCompatActivity() {
                             val jsonPost = jsonBuilder.create()
                             val requestQueue = Volley.newRequestQueue(applicationContext)
 
-                            val data = JSONObject()
-                                    .put("tableName", "participant")
-                                    .put("deviceId", prefs.getString(Home.UUID, ""))
-                                    .put("data", jsonPost.toJson(participant))
-                                    .put("timestamp", System.currentTimeMillis())
+                            val createParticipant = object : JsonObjectRequest(Method.POST, "${Home.STUDY_URL}/participant/create_table", JSONObject(), null,
+                                    Response.ErrorListener {
+                                        if (it.networkResponse == null) {
+                                            println("Response null [participant create table]")
+                                            println("Error: ${it.message}")
+                                        }
+                                    }) {
+                                override fun getHeaders(): MutableMap<String, String> {
+                                    val params = HashMap<String, String>()
+                                    params.put("Content-Type", "application/json")
+                                    return params
+                                }
+                            }
+                            requestQueue.add(createParticipant)
 
-                            val serverRequest = JsonObjectRequest(Request.Method.POST, Home.STUDY_URL, data,
+                            val data = JSONObject()
+                                    .put("device_id", prefs.getString(Home.UUID, ""))
+                                    .put("data", jsonPost.toJson(participant))
+
+                            val serverRequest = JsonObjectRequest(Request.Method.POST, "${Home.STUDY_URL}/participant/insert", data,
                                     Response.Listener {
                                         println("OK ${it.toString(5)}")
                                     },
                                     Response.ErrorListener {
                                         if (it.networkResponse != null) {
                                             println("Error ${it.networkResponse.statusCode}")
+                                            println("${it.message}")
                                         }
                                     }
                             )

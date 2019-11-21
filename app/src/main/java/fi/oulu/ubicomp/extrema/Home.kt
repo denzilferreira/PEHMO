@@ -47,6 +47,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import java.util.*
+import javax.net.ssl.TrustManager
 import kotlin.collections.ArrayList
 
 class Home : AppCompatActivity(), BeaconConsumer {
@@ -64,7 +65,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
         const val PEHMO_BLUETOOTH = 12
         const val EXTREMA_PREFS = "fi.oulu.ubicomp.extrema.prefs"
         const val UUID = "deviceId"
-        const val STUDY_URL = "https://co2.awareframework.com:8443/insert"
+        const val STUDY_URL = "https://pehmo.awareframework.com:8080/index.php/1/4lph4num3ric"
 
         const val RuuviV2and4_LAYOUT = "s:0-1=feaa,m:2-2=10,p:3-3:-41,i:4-21v"
         const val RuuviV3_LAYOUT = "x,m:0-2=990403,i:2-15,d:2-2,d:3-3,d:4-4,d:5-5,d:6-6,d:7-7,d:8-8,d:9-9,d:10-10,d:11-11,d:12-12,d:13-13,d:14-14,d:15-15"
@@ -97,6 +98,8 @@ class Home : AppCompatActivity(), BeaconConsumer {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
 
         val prefs = getSharedPreferences(EXTREMA_PREFS, 0)
         if (!prefs.contains(UUID)) {

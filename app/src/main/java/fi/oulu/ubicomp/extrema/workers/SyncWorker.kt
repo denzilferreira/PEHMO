@@ -4,7 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import com.android.volley.Request
 import com.android.volley.Response
+import com.android.volley.toolbox.BaseHttpStack
+import com.android.volley.toolbox.HttpResponse
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.GsonBuilder
@@ -26,6 +29,21 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                     .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
+            val createParticipant = object : JsonObjectRequest(Method.POST, "${Home.STUDY_URL}/participant/create_table", JSONObject(), null,
+                    Response.ErrorListener {
+                        if (it.networkResponse == null) {
+                            println("Response null [participant create table]")
+                            println("Error: ${it.message}")
+                        }
+                    }) {
+                override fun getHeaders(): MutableMap<String, String> {
+                    val params = HashMap<String, String>()
+                    params.put("Content-Type", "application/json")
+                    return params
+                }
+            }
+            requestQueue.add(createParticipant)
+
             val pendingParticipant = db.participantDao().getPendingSync(prefs.getLong("participant", 0))
             if (pendingParticipant.isNotEmpty()) {
                 val jsonBuilder = GsonBuilder()
@@ -33,12 +51,10 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
                 for (participantRecord in pendingParticipant) {
                     val data = JSONObject()
-                            .put("tableName", "participant")
-                            .put("deviceId", prefs.getString(Home.UUID, ""))
+                            .put("device_id", prefs.getString(Home.UUID, ""))
                             .put("data", jsonPost.toJson(participantRecord))
-                            .put("timestamp", System.currentTimeMillis())
 
-                    val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
+                    val serverRequest = object : JsonObjectRequest(Method.POST, "${Home.STUDY_URL}/participant/insert", data,
                             Response.Listener {
                                 println("Sync OK [participant]: ${pendingParticipant.indexOf(participantRecord) + 1} of ${pendingParticipant.size}")
                                 prefs.edit().putLong("participant", participantRecord.onboardDate).apply()
@@ -68,14 +84,28 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 val jsonBuilder = GsonBuilder()
                 val jsonPost = jsonBuilder.create()
 
+                val createBluetooth = object : JsonObjectRequest(Method.POST, "${Home.STUDY_URL}/bluetooth/create_table", JSONObject(), null,
+                        Response.ErrorListener {
+                            if (it.networkResponse == null) {
+                                println("Response null [bluetooth create table]")
+                                println("Error: ${it.message}")
+                            }
+                        }) {
+                    override fun getHeaders(): MutableMap<String, String> {
+                        val params = HashMap<String, String>()
+                        params.put("Content-Type", "application/json")
+                        return params
+                    }
+                }
+
+                requestQueue.add(createBluetooth)
+
                 for (bluetoothRecord in pendingBluetooth) {
                     val data = JSONObject()
-                            .put("tableName", "bluetooth")
-                            .put("deviceId", prefs.getString(Home.UUID, ""))
+                            .put("device_id", prefs.getString(Home.UUID, ""))
                             .put("data", jsonPost.toJson(bluetoothRecord))
-                            .put("timestamp", System.currentTimeMillis())
 
-                    val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
+                    val serverRequest = object : JsonObjectRequest(Method.POST, "${Home.STUDY_URL}/bluetooth/insert", data,
                             Response.Listener {
                                 println("Sync OK [bluetooth]: ${pendingBluetooth.indexOf(bluetoothRecord) + 1} of ${pendingBluetooth.size}")
                                 prefs.edit().putLong("bluetooth", bluetoothRecord.entryDate).apply()
@@ -103,12 +133,26 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             if (pendingLocation.isNotEmpty()) {
                 val jsonBuilder = GsonBuilder()
                 val jsonPost = jsonBuilder.create()
+
+                val createLocation = object : JsonObjectRequest(Method.POST, "${Home.STUDY_URL}/location/create_table", JSONObject(), null,
+                        Response.ErrorListener {
+                            if (it.networkResponse == null) {
+                                println("Response null [location create table]")
+                                println("Error: ${it.message}")
+                            }
+                        }) {
+                    override fun getHeaders(): MutableMap<String, String> {
+                        val params = HashMap<String, String>()
+                        params.put("Content-Type", "application/json")
+                        return params
+                    }
+                }
+                requestQueue.add(createLocation)
+
                 for (locationRecord in pendingLocation) {
                     val data = JSONObject()
-                            .put("tableName", "location")
-                            .put("deviceId", prefs.getString(Home.UUID, ""))
+                            .put("device_id", prefs.getString(Home.UUID, ""))
                             .put("data", jsonPost.toJson(locationRecord))
-                            .put("timestamp", System.currentTimeMillis())
 
                     val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
                             Response.Listener {
@@ -138,14 +182,28 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             if (pendingSurvey.isNotEmpty()) {
                 val jsonBuilder = GsonBuilder()
                 val jsonPost = jsonBuilder.create()
+
+                val createSurvey = object : JsonObjectRequest(Method.POST, "${Home.STUDY_URL}/survey/create_table", JSONObject(), null,
+                        Response.ErrorListener {
+                            if (it.networkResponse == null) {
+                                println("Response null [survey create table]")
+                                println("Error: ${it.message}")
+                            }
+                        }) {
+                    override fun getHeaders(): MutableMap<String, String> {
+                        val params = HashMap<String, String>()
+                        params.put("Content-Type", "application/json")
+                        return params
+                    }
+                }
+                requestQueue.add(createSurvey)
+
                 for (surveyRecord in pendingSurvey) {
                     val data = JSONObject()
-                            .put("tableName", "diary")
-                            .put("deviceId", prefs.getString(Home.UUID, ""))
+                            .put("device_id", prefs.getString(Home.UUID, ""))
                             .put("data", jsonPost.toJson(surveyRecord))
-                            .put("timestamp", System.currentTimeMillis())
 
-                    val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
+                    val serverRequest = object : JsonObjectRequest(Method.POST, "${Home.STUDY_URL}/survey/insert", data,
                             Response.Listener {
                                 println("Sync OK [survey]: ${pendingSurvey.indexOf(surveyRecord) + 1} of ${pendingSurvey.size}")
                                 prefs.edit().putLong("survey", surveyRecord.entryDate).apply()
@@ -173,14 +231,28 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             if (pendingBattery.isNotEmpty()) {
                 val jsonBuilder = GsonBuilder()
                 val jsonPost = jsonBuilder.create()
+
+                val createBattery = object : JsonObjectRequest(Method.POST, "${Home.STUDY_URL}/battery/create_table", JSONObject(), null,
+                        Response.ErrorListener {
+                            if (it.networkResponse == null) {
+                                println("Response null [battery create table]")
+                                println("Error: ${it.message}")
+                            }
+                        }) {
+                    override fun getHeaders(): MutableMap<String, String> {
+                        val params = HashMap<String, String>()
+                        params.put("Content-Type", "application/json")
+                        return params
+                    }
+                }
+                requestQueue.add(createBattery)
+
                 for (batteryRecord in pendingBattery) {
                     val data = JSONObject()
-                            .put("tableName", "battery")
-                            .put("deviceId", prefs.getString(Home.UUID, ""))
+                            .put("device_id", prefs.getString(Home.UUID, ""))
                             .put("data", jsonPost.toJson(batteryRecord))
-                            .put("timestamp", System.currentTimeMillis())
 
-                    val serverRequest = object : JsonObjectRequest(Method.POST, Home.STUDY_URL, data,
+                    val serverRequest = object : JsonObjectRequest(Method.POST, "${Home.STUDY_URL}/battery/insert", data,
                             Response.Listener {
                                 println("Sync OK [battery]: ${pendingBattery.indexOf(batteryRecord) + 1} of ${pendingBattery.size}")
                                 prefs.edit().putLong("battery", batteryRecord.entryDate).apply()
