@@ -99,8 +99,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-
         val prefs = getSharedPreferences(EXTREMA_PREFS, 0)
         if (!prefs.contains(UUID)) {
             prefs.edit().putString(UUID, java.util.UUID.randomUUID().toString()).apply()
