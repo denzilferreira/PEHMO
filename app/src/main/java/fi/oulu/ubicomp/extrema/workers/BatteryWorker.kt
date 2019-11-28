@@ -46,13 +46,12 @@ class BatteryWorker(appContext: Context, workerParams: WorkerParameters) : Worke
 
         doAsync {
             val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
             val participantData = db.participantDao().getParticipant()
             val batteryNow = Battery(uid = null,
                     participantId = participantData.first().participantId,
-                    entryDate = System.currentTimeMillis(),
+                    timestamp = System.currentTimeMillis(),
                     batteryPercent = batteryPercent,
                     batteryTemperature = batteryTemp,
                     batteryStatus = batteryCurrentStatus

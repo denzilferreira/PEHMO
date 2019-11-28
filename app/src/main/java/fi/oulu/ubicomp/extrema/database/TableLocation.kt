@@ -6,7 +6,7 @@ import androidx.room.*
 data class Location(
         @PrimaryKey(autoGenerate = true) var uid: Int?,
         @ColumnInfo(name = "participantId") var participantId: String?,
-        @ColumnInfo(name = "entryDate") var entryDate: Long,
+        @ColumnInfo(name = "timestamp") var timestamp: Long,
         @ColumnInfo(name = "latitude") var latitude: Double?,
         @ColumnInfo(name = "longitude") var longitude: Double?,
         @ColumnInfo(name = "accuracy_meters") var accuracy: Float?,
@@ -21,6 +21,6 @@ interface LocationDao {
     @Transaction @Insert
     fun insert(location: Location)
 
-    @Query("SELECT * FROM location WHERE entryDate > :lastSync")
+    @Query("SELECT * FROM location WHERE timestamp > :lastSync")
     fun getPendingSync(lastSync : Long) : Array<Location>
 }

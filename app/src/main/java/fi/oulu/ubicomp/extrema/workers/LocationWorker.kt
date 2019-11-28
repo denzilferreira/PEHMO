@@ -14,7 +14,6 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
-import fi.oulu.ubicomp.extrema.database.Participant
 import org.jetbrains.anko.doAsync
 
 class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams), LocationListener {
@@ -24,14 +23,13 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
 
         doAsync {
             val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
             val participantData = db.participantDao().getParticipant().first()
-            val satelliteCount = location.extras?.getInt("satellites")
+            val satelliteCount = location.extras?.getInt("satellites", 0)
             val locationData = fi.oulu.ubicomp.extrema.database.Location(
                     null,
-                    entryDate = System.currentTimeMillis(),
+                    timestamp = System.currentTimeMillis(),
                     participantId = participantData.participantId,
                     latitude = location.latitude,
                     longitude = location.longitude,
@@ -39,7 +37,7 @@ class LocationWorker(appContext: Context, workerParams: WorkerParameters) : Work
                     speed = location.speed,
                     source = location.provider,
                     satellites = satelliteCount,
-                    isIndoors = (satelliteCount == 0)
+                    isIndoors = !(satelliteCount!! > 0 || location.provider == "gps" && location.speed > 0)
             )
 
             db.locationDao().insert(locationData)

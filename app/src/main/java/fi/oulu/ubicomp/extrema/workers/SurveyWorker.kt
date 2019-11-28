@@ -31,7 +31,6 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
 
         doAsync {
             val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
             var displaySurvey = true
@@ -39,7 +38,7 @@ class SurveyWorker(appContext: Context, workerParams: WorkerParameters) : Worker
             if (surveysToday.isNotEmpty()) {
                 for (surveyEntry in surveysToday) {
                     val calendar = Calendar.getInstance()
-                    calendar.timeInMillis = surveyEntry.entryDate
+                    calendar.timeInMillis = surveyEntry.timestamp
                     if (calendar.get(Calendar.HOUR_OF_DAY) == 21) {
                         displaySurvey = false
                         break

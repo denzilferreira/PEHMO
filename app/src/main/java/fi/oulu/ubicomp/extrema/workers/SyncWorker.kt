@@ -4,15 +4,12 @@ import android.content.Context
 import androidx.room.Room
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.*
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonArray
 import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
 import org.jetbrains.anko.doAsync
-import org.json.JSONObject
 
 class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
@@ -24,7 +21,6 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
         doAsync {
             val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
             val createParticipant = object : StringRequest(Method.POST, "${Home.STUDY_URL}/participant/create_table",null,
@@ -42,7 +38,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 val serverRequest = object : StringRequest(Method.POST, "${Home.STUDY_URL}/participant/insert",
                         Response.Listener {
                             println("Sync OK [participant]: ${pendingParticipant.size}")
-                            prefs.edit().putLong("participant", pendingParticipant.maxBy { it.onboardDate }!!.onboardDate).apply()
+                            prefs.edit().putLong("participant", pendingParticipant.maxBy { it.timestamp }!!.timestamp).apply()
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
@@ -77,7 +73,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 val serverRequest = object : StringRequest(Method.POST, "${Home.STUDY_URL}/bluetooth/insert",
                         Response.Listener {
                             println("Sync OK [bluetooth]: ${pendingBluetooth.size}")
-                            prefs.edit().putLong("bluetooth", pendingBluetooth.maxBy { it.entryDate }!!.entryDate).apply()
+                            prefs.edit().putLong("bluetooth", pendingBluetooth.maxBy { it.timestamp }!!.timestamp).apply()
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
@@ -112,7 +108,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 val serverRequest = object : StringRequest(Method.POST, "${Home.STUDY_URL}/location/insert",
                         Response.Listener {
                             println("Sync OK [location]: ${pendingLocation.size}")
-                            prefs.edit().putLong("location", pendingLocation.maxBy { it.entryDate }!!.entryDate).apply()
+                            prefs.edit().putLong("location", pendingLocation.maxBy { it.timestamp }!!.timestamp).apply()
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
@@ -148,7 +144,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 val serverRequest = object : StringRequest(Method.POST, "${Home.STUDY_URL}/survey/insert",
                         Response.Listener {
                             println("Sync OK [survey]: ${pendingSurvey.size}")
-                            prefs.edit().putLong("survey", pendingSurvey.maxBy { it.entryDate }!!.entryDate).apply()
+                            prefs.edit().putLong("survey", pendingSurvey.maxBy { it.timestamp }!!.timestamp).apply()
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {
@@ -185,7 +181,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                 val serverRequest = object : StringRequest(Method.POST, "${Home.STUDY_URL}/battery/insert",
                         Response.Listener {
                             println("Sync OK [battery]: ${pendingBattery.size}")
-                            prefs.edit().putLong("battery", pendingBattery.maxBy { it.entryDate }!!.entryDate).apply()
+                            prefs.edit().putLong("battery", pendingBattery.maxBy { it.timestamp }!!.timestamp).apply()
                         },
                         Response.ErrorListener {
                             if (it.networkResponse == null) {

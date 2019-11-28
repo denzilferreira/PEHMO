@@ -47,7 +47,6 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import java.util.*
-import javax.net.ssl.TrustManager
 import kotlin.collections.ArrayList
 
 class Home : AppCompatActivity(), BeaconConsumer {
@@ -74,18 +73,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
         val region: Region = Region("fi.oulu.ubicomp.extrema", null, null, null)
 
         lateinit var ruuvi: Beacon
-
-        val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE participant ADD COLUMN country TEXT NOT NULL DEFAULT ''")
-            }
-        }
-        val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `battery` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT, `participantId` TEXT NOT NULL, `entryDate` INTEGER NOT NULL, `batteryPercent` REAL NOT NULL, `batteryTemperature` REAL NOT NULL, `batteryStatus` TEXT NOT NULL)")
-            }
-        }
-
         lateinit var countries: ArrayAdapter<String>
         lateinit var ruuviTxt: EditText
     }
@@ -128,7 +115,7 @@ class Home : AppCompatActivity(), BeaconConsumer {
                             participantName = participantName.text.toString(),
                             participantId = participantId.text.toString(),
                             ruuviTag = ruuvi?.bluetoothAddress ?: "",
-                            onboardDate = System.currentTimeMillis(),
+                            timestamp = System.currentTimeMillis(),
                             participantCountry = participantCountry.selectedItem.toString()
                     )
                 } catch (e: UninitializedPropertyAccessException) {
@@ -137,14 +124,13 @@ class Home : AppCompatActivity(), BeaconConsumer {
                             participantName = participantName.text.toString(),
                             participantId = participantId.text.toString(),
                             ruuviTag = "",
-                            onboardDate = System.currentTimeMillis(),
+                            timestamp = System.currentTimeMillis(),
                             participantCountry = participantCountry.selectedItem.toString()
                     )
                 }
 
                 doAsync {
                     val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                             .build()
 
                     db.participantDao().insert(participant)
@@ -210,7 +196,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
         } else {
             doAsync {
                 val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                         .build()
 
                 val participantData = db.participantDao().getParticipant()

@@ -64,7 +64,6 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
 
             doAsync {
                 val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                        .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                         .build()
 
                 val participantData = db.participantDao().getParticipant()
@@ -72,7 +71,7 @@ class BluetoothWorker(appContext: Context, workerParams: WorkerParameters) : Wor
                 if (btDevice.address.equals(participantData.first().ruuviTag, ignoreCase = true)) {
                     val bluetoothData = Bluetooth(null,
                             participantId = participantData.first().participantId,
-                            entryDate = System.currentTimeMillis(),
+                            timestamp = System.currentTimeMillis(),
                             macAddress = btDevice.address,
                             btName = btDevice.name,
                             btRSSI = result.rssi

@@ -6,7 +6,7 @@ import androidx.room.*
 data class Battery(
         @PrimaryKey(autoGenerate = true) var uid: Int?,
         @ColumnInfo(name = "participantId") var participantId : String,
-        @ColumnInfo(name = "entryDate") var entryDate : Long,
+        @ColumnInfo(name = "timestamp") var timestamp : Long,
         @ColumnInfo(name = "batteryPercent") var batteryPercent : Double,
         @ColumnInfo(name = "batteryTemperature") var batteryTemperature : Double,
         @ColumnInfo(name = "batteryStatus") var batteryStatus : String
@@ -17,6 +17,6 @@ interface BatteryDao {
     @Transaction @Insert
     fun insert(battery: Battery)
 
-    @Query("SELECT * FROM battery WHERE entryDate > :lastSync")
+    @Query("SELECT * FROM battery WHERE timestamp > :lastSync")
     fun getPendingSync(lastSync : Long) : Array<Battery>
 }

@@ -7,7 +7,7 @@ import java.util.*
 data class Survey(
         @PrimaryKey(autoGenerate = true) var uid: Int?,
         @ColumnInfo(name = "participantId") var participantId: String?,
-        @ColumnInfo(name = "entryDate") var entryDate: Long,
+        @ColumnInfo(name = "timestamp") var timestamp: Long,
         @ColumnInfo(name = "surveyData") var surveyData: String?
 )
 
@@ -16,9 +16,9 @@ interface SurveyDao {
     @Transaction @Insert
     fun insert(survey: Survey)
 
-    @Query("SELECT * FROM diary WHERE entryDate > :lastSync")
+    @Query("SELECT * FROM diary WHERE timestamp > :lastSync")
     fun getPendingSync(lastSync : Long) : Array<Survey>
 
-    @Query("SELECT * FROM diary WHERE entryDate > :today")
+    @Query("SELECT * FROM diary WHERE timestamp > :today")
     fun getToday(today: Long) : Array<Survey>
 }

@@ -15,7 +15,6 @@ import androidx.work.WorkManager
 import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.R
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
-import fi.oulu.ubicomp.extrema.database.Participant
 import fi.oulu.ubicomp.extrema.database.Survey
 import fi.oulu.ubicomp.extrema.workers.SyncWorker
 import kotlinx.android.synthetic.main.activity_view_survey.*
@@ -48,7 +47,6 @@ class ViewSurvey : AppCompatActivity() {
 
         doAsync {
             val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
             val participantData = db.participantDao().getParticipant().first()
@@ -127,14 +125,13 @@ class ViewSurvey : AppCompatActivity() {
             doAsync {
 
                 val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                        .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                         .build()
 
                 val participantData = db.participantDao().getParticipant().first()
 
                 val survey = Survey(null,
                         participantId = participantData.participantId,
-                        entryDate = System.currentTimeMillis(),
+                        timestamp = System.currentTimeMillis(),
                         surveyData = surveyData.toString())
 
                 println("Survey data: ${surveyData.toString(5)}")

@@ -1,31 +1,21 @@
 package fi.oulu.ubicomp.extrema.views
 
-import android.bluetooth.BluetoothAdapter
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
-import com.android.volley.Request
 import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonArray
 import fi.oulu.ubicomp.extrema.Home
 import fi.oulu.ubicomp.extrema.R
 import fi.oulu.ubicomp.extrema.database.ExtremaDatabase
-import fi.oulu.ubicomp.extrema.database.Participant
 import kotlinx.android.synthetic.main.activity_account.*
-import org.altbeacon.beacon.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -44,7 +34,6 @@ class ViewAccount : AppCompatActivity() {
 
         doAsync {
             val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
             val participant = db.participantDao().getParticipant().first()
@@ -76,7 +65,7 @@ class ViewAccount : AppCompatActivity() {
                         if (participant.ruuviTag != ruuviStatus.text.toString()) {
                             participant.uid = null
                             participant.ruuviTag = ruuviStatus.text.toString()
-                            participant.onboardDate = System.currentTimeMillis() //we create a new onboarding since the tag changed so it syncs
+                            participant.timestamp = System.currentTimeMillis() //we create a new onboarding since the tag changed so it syncs
 
                             db.participantDao().insert(participant)
 
@@ -94,7 +83,7 @@ class ViewAccount : AppCompatActivity() {
                             val serverRequest = object : StringRequest(Method.POST, "${Home.STUDY_URL}/participant/insert",
                                     Response.Listener {
                                         println("Sync OK [participant]")
-                                        prefs.edit().putLong("participant", participant.onboardDate).apply()
+                                        prefs.edit().putLong("participant", participant.timestamp).apply()
                                     },
                                     Response.ErrorListener {
                                         if (it.networkResponse == null) {

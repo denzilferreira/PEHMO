@@ -9,7 +9,7 @@ data class Participant(
         @ColumnInfo(name = "participantName") var participantName: String,
         @ColumnInfo(name = "participantEmail") var participantEmail: String?,
         @ColumnInfo(name = "ruuviTag") var ruuviTag: String?,
-        @ColumnInfo(name = "onboardDate") var onboardDate : Long,
+        @ColumnInfo(name = "timestamp") var timestamp : Long,
         @ColumnInfo(name = "country") var participantCountry : String
 )
 
@@ -18,7 +18,7 @@ interface ParticipantDao {
     @Query("SELECT * FROM participant ORDER BY uid DESC LIMIT 1")
     fun getParticipant(): Array<Participant>
 
-    @Query("SELECT * FROM participant WHERE onboardDate > :lastSync")
+    @Query("SELECT * FROM participant WHERE timestamp > :lastSync")
     fun getPendingSync(lastSync : Long) : Array<Participant>
 
     @Transaction @Insert

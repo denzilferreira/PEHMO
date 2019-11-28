@@ -11,7 +11,7 @@ import androidx.room.migration.Migration
     Bluetooth::class,
     Battery::class
 ]
-, version = 3, exportSchema = true)
+, version = 1, exportSchema = true)
 
 abstract class ExtremaDatabase : RoomDatabase() {
     abstract fun participantDao(): ParticipantDao

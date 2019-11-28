@@ -70,7 +70,6 @@ class Pehmo : Service() {
 
         doAsync {
             val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
-                    .addMigrations(Home.MIGRATION_1_2, Home.MIGRATION_2_3)
                     .build()
 
             val participantData = db.participantDao().getParticipant().first()
