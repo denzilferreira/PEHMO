@@ -66,48 +66,14 @@ class ViewAccount : AppCompatActivity() {
                             participant.uid = null
                             participant.ruuviTag = ruuviStatus.text.toString()
                             participant.timestamp = System.currentTimeMillis() //we create a new onboarding since the tag changed so it syncs
-
                             db.participantDao().insert(participant)
-
-                            val requestQueue = Volley.newRequestQueue(applicationContext)
-
-                            val createParticipant = object : StringRequest(Method.POST, "${Home.STUDY_URL}/participant/create_table", null,
-                                    Response.ErrorListener {
-                                        if (it.networkResponse == null) {
-                                            println("Response null [participant create table]")
-                                            println("Error: ${it.message}")
-                                        }
-                                    }) {}
-                            requestQueue.add(createParticipant)
-
-                            val serverRequest = object : StringRequest(Method.POST, "${Home.STUDY_URL}/participant/insert",
-                                    Response.Listener {
-                                        println("Sync OK [participant]")
-                                        prefs.edit().putLong("participant", participant.timestamp).apply()
-                                    },
-                                    Response.ErrorListener {
-                                        if (it.networkResponse == null) {
-                                            println("Response null [participant]")
-                                            println("Error: ${it.message}")
-                                        }
-                                    }
-                            ) {
-                                override fun getParams(): MutableMap<String, String> {
-                                    val params = HashMap<String, String>()
-                                    params.put("device_id", prefs.getString(Home.UUID, "")!!)
-                                    params.put("data", GsonBuilder().create().toJson(listOf(participant)))
-                                    return params
-                                }
-                            }
-                            requestQueue.add(serverRequest)
+                            db.close()
                         }
+                        db.close()
                     }
-
                     finish()
                 }
             }
-
-            db.close()
         }
     }
 

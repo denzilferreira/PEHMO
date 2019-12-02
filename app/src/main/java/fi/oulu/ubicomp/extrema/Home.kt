@@ -136,9 +136,6 @@ class Home : AppCompatActivity(), BeaconConsumer {
                     db.participantDao().insert(participant)
                     db.close()
 
-                    val sync = OneTimeWorkRequest.Builder(SyncWorker::class.java).build()
-                    WorkManager.getInstance(applicationContext).enqueue(sync)
-
                     uiThread {
                         toast(getString(R.string.participant_created) + " " + getString(R.string.welcome) + " ${participant.participantName}!")
                                 .apply { duration = Toast.LENGTH_LONG }
