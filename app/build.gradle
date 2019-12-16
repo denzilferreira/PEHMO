@@ -75,16 +75,16 @@ def computeVersionName() {
 }
 
 dependencies {
-    def room_version = "2.1.0"
+    def room_version = "2.2.2"
     def anko_version = "0.10.8"
     def work_version = "2.2.0"
-    def gson_version = "2.8.5"
+    def gson_version = '2.8.6'
     def volley_version = "1.1.1"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta2'
-    implementation 'com.google.android.material:material:1.1.0-alpha10'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta3'
+    implementation 'com.google.android.material:material:1.2.0-alpha02'
     implementation "org.jetbrains.anko:anko:$anko_version"
     implementation "androidx.room:room-common:$room_version"
     implementation "androidx.room:room-runtime:$room_version"
@@ -98,9 +98,9 @@ dependencies {
     implementation 'com.neovisionaries:nv-bluetooth:1.8'
 
     //Added firebase for FCM messaging for triggering location fixed when phone is under Doze
-    implementation 'com.google.firebase:firebase-analytics:17.2.0'
+    implementation 'com.google.firebase:firebase-analytics:17.2.1'
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
-    implementation 'com.google.firebase:firebase-messaging:20.0.0'
+    implementation 'com.google.firebase:firebase-messaging:20.0.1'
 
     //Adding Google Fused provider for location tracking
     implementation 'com.google.android.gms:play-services-location:17.0.0'

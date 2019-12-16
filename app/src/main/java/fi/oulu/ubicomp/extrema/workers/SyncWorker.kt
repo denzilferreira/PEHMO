@@ -23,15 +23,6 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             val db = Room.databaseBuilder(applicationContext, ExtremaDatabase::class.java, "extrema")
                     .build()
 
-            val createParticipant = object : StringRequest(Method.POST, "${Home.STUDY_URL}/participant/create_table",null,
-                    Response.ErrorListener {
-                        if (it.networkResponse == null) {
-                            println("Response null [participant create table]")
-                            println("Error: ${it.message}")
-                        }
-                    }){}
-            requestQueue.add(createParticipant)
-
             val pendingParticipant = db.participantDao().getPendingSync(prefs.getLong("participant", 0))
             if (pendingParticipant.isNotEmpty()) {
 
@@ -61,15 +52,6 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
             val pendingBluetooth = db.bluetoothDao().getPendingSync(prefs.getLong("bluetooth", 0))
             if (pendingBluetooth.isNotEmpty()) {
-                val createBluetooth = object : StringRequest(Method.POST, "${Home.STUDY_URL}/bluetooth/create_table", null,
-                        Response.ErrorListener {
-                            if (it.networkResponse == null) {
-                                println("Response null [bluetooth create table]")
-                                println("Error: ${it.message}")
-                            }
-                        }){}
-                requestQueue.add(createBluetooth)
-
                 val serverRequest = object : StringRequest(Method.POST, "${Home.STUDY_URL}/bluetooth/insert",
                         Response.Listener {
                             println("Sync OK [bluetooth]: ${pendingBluetooth.size}")
@@ -96,15 +78,6 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
             val pendingLocation = db.locationDao().getPendingSync(prefs.getLong("location", 0))
             if (pendingLocation.isNotEmpty()) {
-                val createLocation = object : StringRequest(Method.POST, "${Home.STUDY_URL}/location/create_table", null,
-                        Response.ErrorListener {
-                            if (it.networkResponse == null) {
-                                println("Response null [location create table]")
-                                println("Error: ${it.message}")
-                            }
-                        }){}
-                requestQueue.add(createLocation)
-
                 val serverRequest = object : StringRequest(Method.POST, "${Home.STUDY_URL}/location/insert",
                         Response.Listener {
                             println("Sync OK [location]: ${pendingLocation.size}")
@@ -131,16 +104,6 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
             val pendingSurvey = db.surveyDao().getPendingSync(prefs.getLong("survey", 0))
             if (pendingSurvey.isNotEmpty()) {
-
-                val createSurvey = object : StringRequest(Method.POST, "${Home.STUDY_URL}/survey/create_table", null,
-                        Response.ErrorListener {
-                            if (it.networkResponse == null) {
-                                println("Response null [survey create table]")
-                                println("Error: ${it.message}")
-                            }
-                        }) {}
-                requestQueue.add(createSurvey)
-
                 val serverRequest = object : StringRequest(Method.POST, "${Home.STUDY_URL}/survey/insert",
                         Response.Listener {
                             println("Sync OK [survey]: ${pendingSurvey.size}")
@@ -168,16 +131,6 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
             val pendingBattery = db.batteryDao().getPendingSync(prefs.getLong("battery", 0))
             if (pendingBattery.isNotEmpty()) {
-
-                val createBattery = object : StringRequest(Method.POST, "${Home.STUDY_URL}/battery/create_table", null,
-                        Response.ErrorListener {
-                            if (it.networkResponse == null) {
-                                println("Response null [battery create table]")
-                                println("Error: ${it.message}")
-                            }
-                        }) {}
-                requestQueue.add(createBattery)
-
                 val serverRequest = object : StringRequest(Method.POST, "${Home.STUDY_URL}/battery/insert",
                         Response.Listener {
                             println("Sync OK [battery]: ${pendingBattery.size}")
